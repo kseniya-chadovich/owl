@@ -1,0 +1,15 @@
+{
+  "taken_courses": ["MATH 1021", "MATH 1041", "CIS 1051", "CIS 1001", "SCTC 2001"],
+  "taken_geneds": ["GB"],
+  "gened_preference": ["GG", "GY"],
+  "min_credits": 12,
+  "max_credits": 16,
+  "current_semester": 3,
+  "preferred_days": ["MWF"],   
+  "no_days": ["T"], 
+  "lunch_break": true, 
+  "no_mornings": true,
+  "no_evenings": true, 
+  "prefer_mode": "online",
+  "avoid_professors": ["Hawkins", "Zimmerman"]
+}

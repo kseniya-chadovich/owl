@@ -1,0 +1,57 @@
+{
+  "1": {
+    "major": [
+      ["CIS 1051", "CIS 1057"],  
+      "MATH 1041", 
+      "MATH 1021",
+      "CIS 1001", 
+      ["SCTC 1001", "SCTC 2001"]
+    ]
+  },
+  "2": {
+    "major": [
+      "CIS 1068",
+      "CIS 1166", 
+      "MATH 1042"
+    ]
+  },
+  "3": {
+    "major": [
+      "CIS 2168",
+      "CIS 2107"
+    ]
+  },
+  "4": {
+    "major": [
+      "CIS 2033",
+      "CIS 2166"
+    ]
+  }, 
+  "5": {
+    "major": [
+      "CIS 3207",
+      "PHYS 1061"
+    ]
+  }, 
+  "6": {
+    "major": [
+      "CIS 3223",
+      "PHYS 1062", 
+      "Comp Sci Elective"
+    ]
+  }, 
+  "7": {
+    "major": [ 
+      "Comp Sci Elective", 
+      "Comp Sci Elective", 
+      "CIS 3296"
+    ]
+  }, 
+  "8": {
+    "major": [ 
+      "Comp Sci Elective", 
+      "Comp Sci Elective", 
+      ["CIS 4397", "CIS 4398"]
+    ]
+  }
+}
