@@ -239,5 +239,3 @@ def generate_schedules(student_progress_file, num_schedules=3):
         })
 
     return schedules
-
- 

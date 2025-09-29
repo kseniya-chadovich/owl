@@ -1,3 +1,8 @@
+# to run this file, enter 'python -m scripts.test' into your bash -- may differ depending on your setup though
+
+# this file is an example for the frontend team how to call the existing scheduling function 
+# disregard printing if not needed
+
 from scheduler.generator import generate_schedules
 
 def main():
