@@ -1,0 +1,103 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to bottom right, #a41e34, #ffffff);
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* let page scroll normally */
+  padding: 60px 0;
+  margin: 0;
+  min-height: 100vh;
+  overflow-y: auto; /* only the page scrolls */
+}
+
+/* Container: remove inner scroll */
+.container {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  padding: 40px 50px;
+  width: 480px;
+  max-height: none; /* remove the height limit */
+  overflow: visible; /* stop inner scrolling */
+}
+
+h1 {
+  text-align: center;
+  color: #a41e34;
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin-top: 14px;
+  font-weight: 600;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Better radio/toggle alignment */
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 8px 0 10px 0;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+/* Chips (course selections) */
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 20px 0;
+}
+
+.chip {
+  background: #f4f4f4;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.chip:hover {
+  background-color: #ffe6e9;
+}
+
+.chip.selected {
+  background-color: #a41e34;
+  color: #fff;
+  border-color: #a41e34;
+}
+
+.submit-btn {
+  width: 100%;
+  background-color: #a41e34;
+  color: #fff;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background 0.2s ease-in-out;
+}
+
+.submit-btn:hover {
+  background-color: #dc1e3e;
+}

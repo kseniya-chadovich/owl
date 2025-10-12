@@ -1,0 +1,37 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: linear-gradient(to bottom right, #ab0b26, #f1dede);
+  color: white;
+  min-height: 100vh;
+  margin: 0;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+h1 {
+  color: white;
+  margin-bottom: 30px;
+}
+
+.buttons button {
+  margin: 10px;
+  padding: 12px 25px;
+  background-color: white;
+  color: #8b0000; /* TUJ red text */
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+}
+
+.buttons button:hover {
+  background-color: #8b0000;
+  color: white;
+  transform: scale(1.05);
+}

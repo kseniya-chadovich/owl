@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Student Signup</title>
+    <link rel="stylesheet" href="signup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Student Signup / Profile Info</h1>
+      <form id="signupForm">
+        <label>First Name</label>
+        <input type="text" id="firstName" required />
+
+        <label>Last Name</label>
+        <input type="text" id="lastName" required />
+
+        <label>Email</label>
+        <input type="email" id="email" required />
+
+        <label>Password</label>
+        <input type="password" id="password" required />
+
+        <label>Confirm Password</label>
+        <input type="password" id="confirmPassword" required />
+
+        <label>Date of Birth</label>
+        <input type="date" id="birthday" />
+
+        <label>International Student</label>
+        <div class="radio-group">
+          <label
+            ><input type="radio" name="international" value="yes" /> Yes</label
+          >
+          <label
+            ><input type="radio" name="international" value="no" /> No</label
+          >
+        </div>
+
+        <label>Current Semester</label>
+        <select id="semester">
+          <option value="">Select semester</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+        </select>
+
+        <label>Enrollment Type</label>
+        <div class="radio-group">
+          <label
+            ><input type="radio" name="enrollment" value="full-time" />
+            Full-time</label
+          >
+          <label
+            ><input type="radio" name="enrollment" value="part-time" />
+            Part-time</label
+          >
+        </div>
+
+        <label>Taken Courses</label>
+        <div class="chip-container" id="courses">
+          <div class="chip" onclick="toggleSelect(this)">CIS 1001</div>
+          <div class="chip" onclick="toggleSelect(this)">SCTC 2001</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 1051</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 1057</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 1166</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 2033</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 2107</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 2166</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 2168</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3207</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3223</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3296</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4398</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4397</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3203</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3211</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3217</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3219</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3242</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3308</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3319</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3381</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3441</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3515</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3605</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 3715</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4282</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4305</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4307</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4308</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4319</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4324</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4331</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4345</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4350</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4360</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4382</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4419</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4515</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4517</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4523</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4524</div>
+          <div class="chip" onclick="toggleSelect(this)">CIS 4615</div>
+          <div class="chip" onclick="toggleSelect(this)">MATH 1041</div>
+          <div class="chip" onclick="toggleSelect(this)">MATH 1042</div>
+          <div class="chip" onclick="toggleSelect(this)">PHYS 1061</div>
+          <div class="chip" onclick="toggleSelect(this)">PHYS 1062</div>
+        </div>
+
+        <label>Taken GenEd Types</label>
+        <div class="chip-container" id="geneds">
+          <div class="chip" onclick="toggleSelect(this)">GA</div>
+          <div class="chip" onclick="toggleSelect(this)">GB</div>
+          <div class="chip" onclick="toggleSelect(this)">GD</div>
+          <div class="chip" onclick="toggleSelect(this)">GG</div>
+          <div class="chip" onclick="toggleSelect(this)">GS</div>
+          <div class="chip" onclick="toggleSelect(this)">GU</div>
+          <div class="chip" onclick="toggleSelect(this)">GW</div>
+          <div class="chip" onclick="toggleSelect(this)">GQ</div>
+          <div class="chip" onclick="toggleSelect(this)">GY</div>
+          <div class="chip" onclick="toggleSelect(this)">GZ</div>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit</button>
+      </form>
+    </div>
+
+    <script src="signup.js"></script>
+  </body>
+</html>
