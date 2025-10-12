@@ -7,11 +7,25 @@
             class="flex justify-between items-center max-w-7xl mx-auto px-8 py-6"
         >
             <h1 class="text-2xl font-bold tracking-tight">AI Scheduler</h1>
-            <button
-                class="border-2 border-white bg-white text-[#800020] font-semibold px-5 py-2 rounded-xl hover:bg-transparent hover:text-white transition-all duration-300"
-            >
-                Login
-            </button>
+            
+            <!-- AUTH BUTTONS CONTAINER -->
+            <div class="flex space-x-4">
+                <!-- 1. Signup Button -->
+                <button
+                    @click="goTo('/signup')"
+                    class="border-2 border-white bg-white text-[#800020] font-semibold px-5 py-2 rounded-xl hover:bg-transparent hover:text-white transition-all duration-300"
+                >
+                    Signup
+                </button>
+                
+                <!-- 2. Login Button -->
+                <button
+                    @click="goTo('/login')"
+                    class="border-2 border-white bg-white text-[#800020] font-semibold px-5 py-2 rounded-xl hover:bg-transparent hover:text-white transition-all duration-300"
+                >
+                    Login
+                </button>
+            </div>
         </header>
 
         <!-- HERO -->
@@ -45,7 +59,7 @@
 
             <div class="mt-8 flex justify-center gap-4">
                 <button
-                    @click="$router.push('/chat')"
+                    @click="goTo('/chat')"
                     class="bg-[#800020] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#880808] transition fade-up"
                     :class="{ in: showHero }"
                     style="transition-delay: 360ms"
@@ -92,6 +106,15 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { useRouter } from 'vue-router'; // Import useRouter for navigation
+
+// Setup Router
+const router = useRouter();
+
+// Navigation function
+const goTo = (path) => {
+    router.push(path);
+};
 
 const showHero = ref(false);
 const showFeatures = ref(false);
