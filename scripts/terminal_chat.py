@@ -7,7 +7,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import google.genai as genai
 from dotenv import load_dotenv
@@ -29,8 +29,8 @@ Return ONLY minified JSON with these exact keys:
   "min_credits": int,
   "max_credits": int,
   "current_semester": int,
-  "preferred_days": list of weekday tokens such as "Mon","Tue","Wed","Thu","Fri",
-  "no_days": list of weekday tokens,
+  "preferred_days": list of strings using ONLY individual weekday tokens "M","T","W","Th","F" (e.g. ["M","W","F"], ["T","Th"]),
+  "no_days": list of strings using ONLY individual weekday tokens "M","T","W","Th","F" (same format as preferred_days),
   "lunch_break": boolean,
   "no_mornings": boolean,
   "no_evenings": boolean,
@@ -38,6 +38,9 @@ Return ONLY minified JSON with these exact keys:
   "avoid_professors": list of strings,
 }
 If the user does not mention a field, infer a reasonable default or set null/empty list.
+If the user does not specify credits, use min_credits=12 and max_credits=18.
+Treat abbreviations like "TTh" as representing both Tuesday and Thursday by converting them into the two separate tokens "T" and "Th".
+Before producing the JSON, build an internal CONTEXT summary that merges all prior user messages in this conversation. Always honor the most recent instruction when there is a conflict—for example, if the user first says "no Monday classes" but later says "Monday is fine", remove "M" from no_days (and do not add it back unless they ask again). If the user does not mention a field in the latest message, keep the previously stored value (e.g., after "no Fridays" then "I want an art class", the output must still include "F" in no_days). Apply this recency rule for every field.
 Never include comments or extra text.
 When the user mentions general education areas in natural language, map them to these codes:
   Arts -> GA
@@ -124,16 +127,24 @@ def normalize_payload(data: Dict[str, Any]) -> Dict[str, Any]:
 
     normalized["gened_preference"] = _ensure_str_list(normalized.get("gened_preference", []))
 
-    normalized["min_credits"] = _parse_int(
-        normalized.get("min_credits"),
-        DEFAULT_OUTPUT["min_credits"],
-    )
-    normalized["max_credits"] = _parse_int(
-        normalized.get("max_credits"),
-        DEFAULT_OUTPUT["max_credits"],
-    )
-    if normalized["max_credits"] < normalized["min_credits"]:
-        normalized["max_credits"] = normalized["min_credits"]
+    raw_min = normalized.get("min_credits")
+    parsed_min = _parse_optional_int(raw_min)
+    if parsed_min is None or parsed_min <= 0:
+        min_credits = DEFAULT_OUTPUT["min_credits"]
+    else:
+        min_credits = parsed_min
+
+    raw_max = normalized.get("max_credits")
+    parsed_max = _parse_optional_int(raw_max)
+    if parsed_max is None or parsed_max < min_credits:
+        max_credits = DEFAULT_OUTPUT["max_credits"]
+        if max_credits < min_credits:
+            max_credits = min_credits
+    else:
+        max_credits = parsed_max
+
+    normalized["min_credits"] = min_credits
+    normalized["max_credits"] = max_credits
 
     normalized["current_semester"] = _parse_int(
         normalized.get("current_semester"),
@@ -178,6 +189,15 @@ def _parse_int(value: Any, default: int) -> int:
         return int(default)
 
 
+def _parse_optional_int(value: Any) -> Optional[int]:
+    try:
+        if value is None:
+            return None
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def interactive_loop(
     client: genai.Client,
     model_name: str,
@@ -209,7 +229,6 @@ def interactive_loop(
             conversation_history.pop()
             print(f"Error: {exc}")
             continue
-        conversation_history.append(f"Model: {raw_output}")
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         show_schedules(payload, num_schedules)
 
@@ -223,7 +242,6 @@ def run_once(
 ) -> None:
     conversation_history: List[str] = [SCHEMA_DESCRIPTION, f"User: {request_text.strip()}"]
     raw_output = request_json(client, model_name, conversation_history, temperature)
-    conversation_history.append(f"Model: {raw_output}")
     payload = normalize_payload(extract_json(raw_output))
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     show_schedules(payload, num_schedules)
