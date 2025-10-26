@@ -13,7 +13,12 @@
             <form @submit.prevent="handleSubmit">
                 <!-- Name Fields -->
                 <label for="firstName">First Name</label>
-                <input type="text" id="firstName" v-model="firstName" required />
+                <input
+                    type="text"
+                    id="firstName"
+                    v-model="firstName"
+                    required
+                />
 
                 <label for="lastName">Last Name</label>
                 <input type="text" id="lastName" v-model="lastName" required />
@@ -23,7 +28,12 @@
                 <input type="email" id="email" v-model="email" required />
 
                 <label for="password">Password</label>
-                <input type="password" id="password" v-model="password" required />
+                <input
+                    type="password"
+                    id="password"
+                    v-model="password"
+                    required
+                />
 
                 <label for="confirmPassword">Confirm Password</label>
                 <input
@@ -40,11 +50,19 @@
                 <label>International Student</label>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" value="yes" v-model="international" />
+                        <input
+                            type="radio"
+                            value="yes"
+                            v-model="international"
+                        />
                         Yes
                     </label>
                     <label>
-                        <input type="radio" value="no" v-model="international" />
+                        <input
+                            type="radio"
+                            value="no"
+                            v-model="international"
+                        />
                         No
                     </label>
                 </div>
@@ -58,11 +76,19 @@
                 <label>Enrollment Type</label>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" value="full-time" v-model="enrollment" />
+                        <input
+                            type="radio"
+                            value="full-time"
+                            v-model="enrollment"
+                        />
                         Full-time
                     </label>
                     <label>
-                        <input type="radio" value="part-time" v-model="enrollment" />
+                        <input
+                            type="radio"
+                            value="part-time"
+                            v-model="enrollment"
+                        />
                         Part-time
                     </label>
                 </div>
@@ -73,7 +99,10 @@
                     <div
                         v-for="course in courses"
                         :key="course"
-                        :class="['chip', { selected: selectedCourses.includes(course) }]"
+                        :class="[
+                            'chip',
+                            { selected: selectedCourses.includes(course) },
+                        ]"
                         @click="toggleCourse(course)"
                     >
                         {{ course }}
@@ -85,7 +114,10 @@
                     <div
                         v-for="gened in geneds"
                         :key="gened"
-                        :class="['chip', { selected: selectedGeneds.includes(gened) }]"
+                        :class="[
+                            'chip',
+                            { selected: selectedGeneds.includes(gened) },
+                        ]"
                         @click="toggleGened(gened)"
                     >
                         {{ gened }}
@@ -93,7 +125,7 @@
                 </div>
 
                 <button type="submit" class="submit-btn">
-                    {{ isLoading ? 'Submitting...' : 'Submit' }}
+                    {{ isLoading ? "Submitting..." : "Submit" }}
                 </button>
 
                 <p class="small-text">
@@ -106,8 +138,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { supabase } from "../supabase";
 
 const router = useRouter();
 const isLoading = ref(false);
@@ -125,23 +158,73 @@ const enrollment = ref("");
 
 // Chip Data
 const courses = ref([
-    "CIS 1001","SCTC 2001","CIS 1051","CIS 1057","CIS 1166","CIS 2033",
-    "CIS 2107","CIS 2166","CIS 2168","CIS 3207","CIS 3223","CIS 3296",
-    "CIS 4398","CIS 4397","CIS 3203","CIS 3211","CIS 3217","CIS 3219",
-    "CIS 3242","CIS 3308","CIS 3319","CIS 3381","CIS 3441","CIS 3515",
-    "CIS 3605","CIS 3715","CIS 4282","CIS 4305","CIS 4307","CIS 4308",
-    "CIS 4319","CIS 4324","CIS 4331","CIS 4345","CIS 4350","CIS 4360",
-    "CIS 4382","CIS 4419","CIS 4515","CIS 4517","CIS 4523","CIS 4524",
-    "CIS 4615","MATH 1041","MATH 1042","PHYS 1061","PHYS 1062"
+    "CIS 1001",
+    "SCTC 2001",
+    "CIS 1051",
+    "CIS 1057",
+    "CIS 1166",
+    "CIS 2033",
+    "CIS 2107",
+    "CIS 2166",
+    "CIS 2168",
+    "CIS 3207",
+    "CIS 3223",
+    "CIS 3296",
+    "CIS 4398",
+    "CIS 4397",
+    "CIS 3203",
+    "CIS 3211",
+    "CIS 3217",
+    "CIS 3219",
+    "CIS 3242",
+    "CIS 3308",
+    "CIS 3319",
+    "CIS 3381",
+    "CIS 3441",
+    "CIS 3515",
+    "CIS 3605",
+    "CIS 3715",
+    "CIS 4282",
+    "CIS 4305",
+    "CIS 4307",
+    "CIS 4308",
+    "CIS 4319",
+    "CIS 4324",
+    "CIS 4331",
+    "CIS 4345",
+    "CIS 4350",
+    "CIS 4360",
+    "CIS 4382",
+    "CIS 4419",
+    "CIS 4515",
+    "CIS 4517",
+    "CIS 4523",
+    "CIS 4524",
+    "CIS 4615",
+    "MATH 1041",
+    "MATH 1042",
+    "PHYS 1061",
+    "PHYS 1062",
 ]);
-const geneds = ref(["GA","GB","GD","GG","GS","GU","GW","GQ","GY","GZ"]);
+const geneds = ref([
+    "GA",
+    "GB",
+    "GD",
+    "GG",
+    "GS",
+    "GU",
+    "GW",
+    "GQ",
+    "GY",
+    "GZ",
+]);
 const selectedCourses = ref([]);
 const selectedGeneds = ref([]);
 
 // Message Box State
 const message = ref({
-    text: '',
-    type: '', // 'success' or 'error'
+    text: "",
+    type: "", // 'success' or 'error'
     visible: false,
 });
 
@@ -166,61 +249,55 @@ const toggleGened = (gened) => {
 };
 
 const handleSubmit = async () => {
-    isLoading.value = true;
-    
-    // 1. Password Validation
-    if (password.value !== confirmPassword.value) {
-        showMessage("Passwords do not match. Please re-enter.", 'error');
-        isLoading.value = false;
-        return;
-    }
+  isLoading.value = true;
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500)); 
-
-    // 2. Save Data to localStorage (for front-end demo)
-    // NOTE: We only save email/password for the temporary login flow.
-    localStorage.setItem("userEmail", email.value);
-    localStorage.setItem("userPassword", password.value);
-    
-    // Construct the full data object (for console logging/future API)
-    const data = {
-        firstName: firstName.value,
-        lastName: lastName.value,
-        email: email.value,
-        // Password shouldn't typically be logged, but for the demo:
-        password: password.value, 
-        birthday: birthday.value,
-        international: international.value,
-        semester: semester.value,
-        enrollment: enrollment.value,
-        takenCourses: selectedCourses.value,
-        geneds: selectedGeneds.value,
-    };
-
-    console.log("Form Data Submitted and Saved to localStorage:", data);
-    
-    // 3. Success Message and Redirect
-    showMessage("Account created successfully! Redirecting to login...", 'success');
-    
-    setTimeout(() => {
-        router.push('/login'); 
-    }, 1000);
-
+  if (password.value !== confirmPassword.value) {
+    showMessage("Passwords do not match. Please re-enter.", 'error');
     isLoading.value = false;
+    return;
+  }
+
+  try {
+    // Use a different variable name to avoid redeclaration
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: email.value,
+      password: password.value,
+      options: {
+        data: {
+          firstName: firstName.value,
+          lastName: lastName.value,
+          date_of_birth: birthday.value || null,
+          international: international.value === 'yes',
+          semester: semester.value ? parseInt(semester.value) : null,
+          enrollment: enrollment.value || null,
+          taken_courses: selectedCourses.value,
+          geneds: selectedGeneds.value,
+        },
+      },
+    });
+
+    if (error) throw error;
+
+    showMessage("Account created successfully! Check your email to verify.", 'success');
+    setTimeout(() => router.push('/login'), 2000);
+  } catch (err) {
+    showMessage(err.message || "Signup failed. Please try again.", 'error');
+  } finally {
+    isLoading.value = false;
+  }
 };
+
 </script>
 
 <style scoped>
-
 .page-background {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(to bottom right, #a41e34, #ffffff);
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: flex-start; 
-    padding: 40px 0; 
+    align-items: flex-start;
+    padding: 40px 0;
     margin: 0;
     min-height: 100vh;
     width: 100%;
@@ -232,9 +309,9 @@ const handleSubmit = async () => {
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
     padding: 40px 50px;
-    width: 100%; 
-    max-width: 550px; 
-    text-align: left; 
+    width: 100%;
+    max-width: 550px;
+    text-align: left;
     box-sizing: border-box;
 }
 
@@ -263,7 +340,8 @@ select {
     box-sizing: border-box;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
     outline: none;
     border-color: #a41e34;
 }
@@ -344,7 +422,7 @@ input:focus, select:focus {
     color: #a41e34;
     text-decoration: none;
     font-weight: 600;
-    cursor: pointer; 
+    cursor: pointer;
 }
 
 .small-text a:hover {

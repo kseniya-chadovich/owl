@@ -34,7 +34,7 @@
                 </div>
 
                 <button type="submit" class="login-btn">
-                    {{ isLoading ? 'Logging in...' : 'Login' }}
+                    {{ isLoading ? "Logging in..." : "Login" }}
                 </button>
 
                 <p class="small-text">
@@ -47,61 +47,64 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'; // Removed onMounted as it's not needed for localStorage
-import { useRouter } from 'vue-router';
-
+import { ref } from "vue"; // Removed onMounted as it's not needed for localStorage
+import { useRouter } from "vue-router";
+import { supabase } from "../supabase";
 
 // --- Router Setup ---
 const router = useRouter();
-const email = ref('');
-const password = ref('');
+const email = ref("");
+const password = ref("");
 const isLoading = ref(false);
 
 const message = ref({
-    text: '',
-    type: '', // 'success' or 'error'
+    text: "",
+    type: "", // 'success' or 'error'
     visible: false,
 });
 
+const showMessage = (text, type) => {
+    message.value.text = text;
+    message.value.type = type;
+    message.value.visible = true;
+    // Optional: Auto-hide the message after a few seconds
+    setTimeout(() => {
+        message.value.visible = false;
+    }, 5000); 
+};
 
 // --- Login Handler ---
 const handleLogin = async () => {
-    // Basic frontend validation
     if (!email.value || !password.value) {
-        showMessage('Please enter both email and password.', 'error');
+        showMessage("Please enter both email and password.", "error");
         return;
     }
 
     isLoading.value = true;
 
-    // Use localStorage for temporary client-side authentication check
-    const storedEmail = localStorage.getItem("userEmail");
-    const storedPassword = localStorage.getItem("userPassword");
-    
-    // Simulate network delay for better user experience
-    await new Promise(resolve => setTimeout(resolve, 500)); 
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email.value,
+            password: password.value,
+        });
 
-    if (email.value === storedEmail && password.value === storedPassword) {
-        // Successful login
-        showMessage('Login successful! Redirecting to dashboard...', 'success');
-        
-        // Use Vue Router to navigate
-        setTimeout(() => {
-            router.push('/dashboard'); 
-        }, 1000);
-    } else {
-        // Failed login
-        showMessage('Invalid email or password.', 'error');
+        if (error) throw error;
+
+        if (!data.user) {
+            showMessage("Login succeeded but no user returned.", "error");
+            isLoading.value = false;
+            return;
+        }
+
+        // Successful login — redirect immediately
+        showMessage("Login successful! Redirecting...", "success");
+        router.push("/chat"); // your chat page route
+    } catch (err) {
+        console.error("Login error", err);
+        showMessage(err.message || "Invalid email or password.", "error");
+    } finally {
+        isLoading.value = false;
     }
-    
-    isLoading.value = false;
-};
-
-// --- Custom Message Display Function ---
-const showMessage = (text, type) => {
-    message.value.text = text;
-    message.value.type = type;
-    message.value.visible = true;
 };
 </script>
 
@@ -117,7 +120,7 @@ const showMessage = (text, type) => {
     margin: 0;
     min-height: 100vh;
     width: 100%;
-    position: relative; 
+    position: relative;
 }
 
 .container {
@@ -125,8 +128,8 @@ const showMessage = (text, type) => {
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
     padding: 40px 50px;
-    width: 100%; 
-    max-width: 400px; 
+    width: 100%;
+    max-width: 400px;
     text-align: center;
     box-sizing: border-box;
 }
@@ -155,7 +158,7 @@ input {
     border-radius: 8px;
     font-size: 14px;
     transition: border 0.2s ease-in-out;
-    box-sizing: border-box; 
+    box-sizing: border-box;
 }
 
 input:focus {
@@ -189,13 +192,12 @@ input:focus {
     color: #a41e34;
     text-decoration: none;
     font-weight: 600;
-    cursor: pointer; 
+    cursor: pointer;
 }
 
 .small-text a:hover {
     text-decoration: underline;
 }
-
 
 .message-box {
     position: absolute;
