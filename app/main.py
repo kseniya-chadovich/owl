@@ -5,10 +5,10 @@ from scripts.terminal_chat import build_client, handle_request, SCHEMA_DESCRIPTI
 
 app = FastAPI(title="Scheduling Assistant API")
 
-# Allow frontend access
+# Allow frontend access (adjust to your frontend URL later)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to your frontend URL before deploy
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -17,8 +17,9 @@ app.add_middleware(
 client = build_client()
 MODEL_NAME = "models/gemini-2.5-flash-lite"
 
-# Each user gets their own conversation + academic context
+# Stores per-user conversation + academic info
 user_state = {}
+
 
 @app.get("/")
 def root():
@@ -28,9 +29,9 @@ def root():
 @app.post("/dialog")
 async def dialog(request: Request):
     """
-    Handles dialog and schedule generation.
-    Academic data remains constant for a session.
-    Personal preferences are updated by the AI model through context.
+    Main dialog endpoint.
+    - Academic records are fixed for one session.
+    - Preferences (gened_preference, days, etc.) are updated dynamically through AI.
     """
     data = await request.json()
     user_id = data.get("user_id", "default")
@@ -42,20 +43,22 @@ async def dialog(request: Request):
     if not message:
         return {"error": "Missing 'message' field in request."}
 
-    # If this is a new session (new semester), initialize everything
+    # Split academic data (static) from preferences (handled by AI)
+    academic_fields = {"taken_courses", "taken_geneds", "current_semester"}
+    academic_data = {k: v for k, v in new_student_data.items() if k in academic_fields}
+
+    # Initialize user if new
     if user_id not in user_state:
         user_state[user_id] = {
             "conversation": [SCHEMA_DESCRIPTION],
-            "student_data": new_student_data or {}
+            "student_data": academic_data,
         }
+    else:
+        # Update academic data if new info provided
+        if academic_data:
+            user_state[user_id]["student_data"].update(academic_data)
 
-    # Academic data stays the same for the entire session
     student_data = user_state[user_id]["student_data"]
-    if not student_data and new_student_data:
-        user_state[user_id]["student_data"] = new_student_data
-        student_data = new_student_data
-
-    # Reuse existing conversation (AI context)
     conversation = user_state[user_id]["conversation"]
 
     try:
@@ -71,7 +74,7 @@ async def dialog(request: Request):
     except Exception as e:
         return {"error": str(e)}
 
-    # Update conversation context (AI remembers user’s changing preferences)
+    # Save conversation state for context
     user_state[user_id]["conversation"] = result["conversation"]
 
     return {
@@ -85,8 +88,8 @@ async def dialog(request: Request):
 @app.post("/reset")
 async def reset_user(request: Request):
     """
-    Fully resets the user's state (conversation + academic data).
-    Called from the frontend when the student finalizes a semester schedule.
+    Fully resets user's data and conversation.
+    Called when the student finalizes a semester and starts a new one.
     """
     data = await request.json()
     user_id = data.get("user_id")
@@ -97,4 +100,4 @@ async def reset_user(request: Request):
     if user_id in user_state:
         del user_state[user_id]
 
-    return {"message": f"All data reset for user '{user_id}'. A new session can now start."}
+    return {"message": f"All data reset for user '{user_id}'. New session ready."}
