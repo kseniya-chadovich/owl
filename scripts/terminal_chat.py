@@ -325,6 +325,37 @@ def print_schedules(schedules: List[Dict[str, Any]]) -> None:
         print(f"Total credits: {sched.get('total_credits')}")
         print("Progress report:", sched.get("progress_report"))
 
+def handle_request(
+    client: genai.Client,
+    model_name: str,
+    message: str,
+    student_data: Optional[Dict[str, Any]] = None,
+    conversation_history: Optional[List[str]] = None,
+    num_schedules: int = 3,
+    temperature: float = 0.2,
+) -> Dict[str, Any]:
+    """
+    High-level helper for backend API use.
+    Keeps original logic, but allows passing student_data and conversation context.
+    """
+    if conversation_history is None:
+        conversation_history = [SCHEMA_DESCRIPTION]
+    conversation_history.append(f"User: {message}")
+
+    raw_output = request_json(client, model_name, conversation_history, temperature)
+    payload = normalize_payload(extract_json(raw_output))
+
+    if student_data:
+        payload = {**payload, **student_data}
+
+    schedules = generate_schedules_from_payload(payload, num_schedules)
+
+    return {
+        "payload": payload,
+        "schedules": schedules,
+        "conversation": conversation_history,
+    }
+
 
 if __name__ == "__main__":
     main()

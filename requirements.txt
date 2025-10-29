@@ -1,3 +1,6 @@
 google-genai
 ortools
 python-dotenv
+fastapi
+uvicorn
+
