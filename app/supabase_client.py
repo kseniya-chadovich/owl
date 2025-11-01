@@ -1,16 +1,16 @@
 # app/supabase_client.py
-# simple shared client for Supabase
-
 import os
-from dotenv import load_dotenv
 from supabase import create_client, Client
 
-load_dotenv()
-
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
-
-if not SUPABASE_URL or not SUPABASE_ANON_KEY:
-    raise RuntimeError("Please set SUPABASE_URL and SUPABASE_ANON_KEY in .env")
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+def get_supabase() -> Client:
+    """
+    Return a Supabase client using env vars.
+    This will raise an error if env vars are missing.
+    """
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_ANON_KEY")
+    if not url or not key:
+        # Keep message simple so students can understand
+        raise RuntimeError("Supabase URL or KEY is missing. Check your .env file.")
+    client: Client = create_client(url, key)
+    return client
