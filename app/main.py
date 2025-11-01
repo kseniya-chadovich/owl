@@ -1,6 +1,10 @@
 # app/main.py
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+
+# ✅ add this: use our Supabase endpoints
+from .routes_supabase import router as supabase_router
+
 from scripts.terminal_chat import build_client, handle_request, SCHEMA_DESCRIPTION
 
 app = FastAPI(title="Scheduling Assistant API")
@@ -13,6 +17,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ✅ mount Supabase routes
+# this will give you:
+# GET  /supabase/classrooms
+# POST /supabase/classrooms
+# GET  /supabase/games
+# ...
+app.include_router(supabase_router)
 
 client = build_client()
 MODEL_NAME = "models/gemini-2.5-flash-lite"
