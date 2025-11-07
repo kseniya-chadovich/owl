@@ -40,7 +40,9 @@ Return ONLY minified JSON with these exact keys:
 If the user does not mention a field, infer a reasonable default or set null/empty list.
 If the user does not specify credits, use min_credits=12 and max_credits=18.
 Treat abbreviations like "TTh" as representing both Tuesday and Thursday by converting them into the two separate tokens "T" and "Th".
+When the user says they want classes "only" on certain weekdays, add those weekdays to preferred_days AND place every other weekday token not mentioned into no_days (unless the user explicitly allowed them in a later message). If they forbid specific weekdays, keep them in no_days and do not add them back unless they reverse the instruction.
 Before producing the JSON, build an internal CONTEXT summary that merges all prior user messages in this conversation. Always honor the most recent instruction when there is a conflict—for example, if the user first says "no Monday classes" but later says "Monday is fine", remove "M" from no_days (and do not add it back unless they ask again). If the user does not mention a field in the latest message, keep the previously stored value (e.g., after "no Fridays" then "I want an art class", the output must still include "F" in no_days). Apply this recency rule for every field.
+Never change previously known academic facts (taken_courses, taken_geneds, current_semester) unless the user provides new values.
 Never include comments or extra text.
 When the user mentions general education areas in natural language, map them to these codes:
   Arts -> GA
