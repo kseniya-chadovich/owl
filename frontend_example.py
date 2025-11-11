@@ -1,74 +1,85 @@
-"""
-
-Example script showing exactly what kind of JSON the frontend
-should send to the backend API, and what response to expect.
-
-It simulates:
-  1. Starting a new semester session (sending academic data) - this is basically starting a new dialog, first exchange of information type of POST
-  2. Updating preferences mid-session (same user) - this is in case users adds smth like "actually nevermind, Tuesday do't work for me either" aka 
-  continuing current dialog (+ context awarness)
-  3. Resetting the session (for next semester) - once the user is satisfied with the schedule, we want to get rid of the current dialog, at least
-  on the backend. On the frontend, we can keep it or not keep it, doesn't matter
-"""
-
 import requests
-import json
 
-BASE_URL = "https://scheduling-assistant-zl2c.onrender.com"
+BASE_URL = "http://localhost:8000"
 
-# 1️⃣ Example: starting a new session (includes academic data)
-start_payload = {
-    "user_id": "1",
-    "message": (
-        "No Tuesday classes, prefer online and gen eds GG or GY. "
-        "I also want no morning classes and a lunch break. NO prof Karam :)"
-    ),
-    "student_data": {
-        "taken_courses": ["MATH 1021", "CIS 1041"],
-        "taken_geneds": ["GB"],
-        "current_semester": 2
+
+def register_student_example():
+    """Example: register or update one student's personal + academic info."""
+    payload = {
+        "personal": {
+            "user_id": "s1234567",
+            "full_name": "Test Student",
+            "age": 20,
+            "is_international": True,
+        },
+        "academic": {
+            "user_id": "s1234567",
+            "current_semester": "Fall 2025",
+            "taken_courses": ["CIS1001", "ENG1002"],
+            "taken_geneds": ["Humanities", "Math"],
+        },
     }
-}
 
-# 2️⃣ Example: updating preferences mid-session (no student_data)
-update_payload = {
-    "user_id": "1",
-    "message": "Actually, I can take morning classes now, but no Friday classes please."
-}
-
-# 3️⃣ Example: resetting the session completely
-reset_payload = {"user_id": "1"}
+    r = requests.post(f"{BASE_URL}/register-student", json=payload)
+    print("POST /register-student:", r.status_code, r.json())
 
 
-def post_json(endpoint: str, payload: dict):
-    """Helper function to send POST requests and print results."""
-    url = f"{BASE_URL}{endpoint}"
-    print(f"\n➡️ POST {url}")
-    print("Request JSON:")
-    print(json.dumps(payload, indent=2, ensure_ascii=False))
-
-    try:
-        response = requests.post(url, json=payload, timeout=60)
-        response.raise_for_status()
-        data = response.json()
-        print("\n✅ Response JSON:")
-        print(json.dumps(data, indent=2, ensure_ascii=False))
-        return data
-    except requests.exceptions.RequestException as e:
-        print(f"\n❌ Request failed: {e}")
-        return None
+def get_student_example():
+    """Example: fetch merged data for scheduler/frontend."""
+    user_id = "s1234567"
+    r = requests.get(f"{BASE_URL}/students/{user_id}")
+    print(f"GET /students/{user_id}:", r.status_code, r.json())
 
 
-def main():
-    print("=== 1️⃣ Start New Semester Session ===")
-    post_json("/dialog", start_payload)
+def get_personal_only_example():
+    """Example: fetch only personal info."""
+    user_id = "s1234567"
+    r = requests.get(f"{BASE_URL}/students/personal/{user_id}")
+    print(f"GET /students/personal/{user_id}:", r.status_code, r.json())
 
-    print("\n=== 2️⃣ Update Preferences During Same Session ===")
-    post_json("/dialog", update_payload)
 
-    print("\n=== 3️⃣ Reset After Finalizing Schedule ===")
-    post_json("/reset", reset_payload)
+def get_academic_only_example():
+    """Example: fetch only academic info."""
+    user_id = "s1234567"
+    r = requests.get(f"{BASE_URL}/students/academic/{user_id}")
+    print(f"GET /students/academic/{user_id}:", r.status_code, r.json())
+
+
+def save_schedule_example():
+    """Example: save final schedule for a student."""
+    user_id = "s1234567"
+    schedule = {
+        "semester": "Fall 2025",
+        "sections": [
+            {"course": "CIS1001", "day": "Mon", "time": "09:00-10:15"},
+            {"course": "ENG1002", "day": "Wed", "time": "13:00-14:15"},
+        ],
+    }
+    payload = {"user_id": user_id, "schedule": schedule}
+    r = requests.post(f"{BASE_URL}/students/schedules", json=payload)
+    print("POST /students/schedules:", r.status_code, r.json())
+
+
+def get_schedule_example():
+    """Example: fetch saved schedule for a student."""
+    user_id = "s1234567"
+    r = requests.get(f"{BASE_URL}/students/schedules/{user_id}")
+    print(f"GET /students/schedules/{user_id}:", r.status_code, r.json())
+
+
+def delete_student_example():
+    """Example: delete student and all related info."""
+    user_id = "s1234567"
+    r = requests.delete(f"{BASE_URL}/students/{user_id}")
+    print(f"DELETE /students/{user_id}:", r.status_code, r.json())
 
 
 if __name__ == "__main__":
-    main()
+    # Run these one by one as needed.
+    register_student_example()
+    get_student_example()
+    get_personal_only_example()
+    get_academic_only_example()
+    save_schedule_example()
+    get_schedule_example()
+    # delete_student_example()  # uncomment if you want to clean up test data
