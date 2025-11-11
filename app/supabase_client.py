@@ -1,26 +1,34 @@
-# app/supabase_client.py
-# Simple helper to create and reuse a Supabase client.
-# Uses SUPABASE_URL and SUPABASE_ANON_KEY / SERVICE_ROLE_KEY from .env
-
 import os
+from pathlib import Path
+
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-_client: Client | None = None
+
+# Always load .env from project root (the folder that contains "app" and ".env")
+BASE_DIR = Path(__file__).resolve().parent.parent
+env_path = BASE_DIR / ".env"
+load_dotenv(env_path)
+
 
 def get_supabase() -> Client:
-    """Return a singleton Supabase client."""
-    global _client
-    if _client is None:
-        load_dotenv()
-        url = os.getenv("SUPABASE_URL")
-        key = (
-            os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-            or os.getenv("SUPABASE_ANON_KEY")
+    """
+    Create and return a Supabase client using env vars.
+
+    Required in .env:
+      SUPABASE_URL=...
+      SUPABASE_ANON_KEY=...
+    """
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_ANON_KEY")
+
+    if not url or not key:
+        # Print to server log to help debugging
+        print("DEBUG Supabase URL:", url)
+        print("DEBUG Supabase ANON KEY exists:", bool(key))
+
+        raise RuntimeError(
+            "Supabase URL or key not set. Please check your .env file."
         )
-        if not url or not key:
-            raise RuntimeError(
-                "Supabase URL or key not set. Please check your .env file."
-            )
-        _client = create_client(url, key)
-    return _client
+
+    return create_client(url, key)
