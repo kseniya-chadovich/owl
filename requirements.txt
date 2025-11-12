@@ -1,6 +1,6 @@
 google-genai
 ortools
-supabase-py==2.4.0
+supabase==2.4.0
 python-dotenv==1.0.1
 fastapi
 uvicorn
