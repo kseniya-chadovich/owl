@@ -1,8 +1,7 @@
 google-genai
-ortools
-supabase==2.4.0
-python-dotenv==1.0.1
-fastapi
+ortools==9.14.6206
+supabase==2.3.5
+python-dotenv
+fastapi==0.115.0
 uvicorn
-
 
