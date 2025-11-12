@@ -1,6 +1,5 @@
 <template>
     <div class="page-background">
-        <!-- Custom Message Box for Success/Error -->
         <div v-if="message.visible" :class="['message-box', message.type]">
             {{ message.text }}
             <button @click="message.visible = false" class="close-btn">
@@ -47,11 +46,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue"; // Removed onMounted as it's not needed for localStorage
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { supabase } from "../supabase";
 
-// --- Router Setup ---
+
 const router = useRouter();
 const email = ref("");
 const password = ref("");
@@ -59,7 +58,7 @@ const isLoading = ref(false);
 
 const message = ref({
     text: "",
-    type: "", // 'success' or 'error'
+    type: "", 
     visible: false,
 });
 
@@ -67,13 +66,11 @@ const showMessage = (text, type) => {
     message.value.text = text;
     message.value.type = type;
     message.value.visible = true;
-    // Optional: Auto-hide the message after a few seconds
     setTimeout(() => {
         message.value.visible = false;
     }, 5000); 
 };
 
-// --- Login Handler ---
 const handleLogin = async () => {
     if (!email.value || !password.value) {
         showMessage("Please enter both email and password.", "error");
@@ -96,9 +93,8 @@ const handleLogin = async () => {
             return;
         }
 
-        // Successful login — redirect immediately
         showMessage("Login successful! Redirecting...", "success");
-        router.push("/chat"); // your chat page route
+        router.push("/chat"); 
     } catch (err) {
         console.error("Login error", err);
         showMessage(err.message || "Invalid email or password.", "error");
