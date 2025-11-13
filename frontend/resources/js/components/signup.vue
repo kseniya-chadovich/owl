@@ -1,6 +1,5 @@
 <template>
     <div class="page-background">
-        <!-- Custom Message Box for Success/Error -->
         <div v-if="message.visible" :class="['message-box', message.type]">
             {{ message.text }}
             <button @click="message.visible = false" class="close-btn">
@@ -11,7 +10,6 @@
         <div class="container">
             <h1>Student Signup / Profile Info</h1>
             <form @submit.prevent="handleSubmit">
-                <!-- Name Fields -->
                 <label for="firstName">First Name</label>
                 <input
                     type="text"
@@ -23,7 +21,6 @@
                 <label for="lastName">Last Name</label>
                 <input type="text" id="lastName" v-model="lastName" required />
 
-                <!-- Auth Fields -->
                 <label for="email">Email</label>
                 <input type="email" id="email" v-model="email" required />
 
@@ -43,7 +40,6 @@
                     required
                 />
 
-                <!-- Profile Fields -->
                 <label for="birthday">Date of Birth</label>
                 <input type="date" id="birthday" v-model="birthday" />
 
@@ -93,7 +89,6 @@
                     </label>
                 </div>
 
-                <!-- Course Selection Fields -->
                 <label>Taken Courses</label>
                 <div class="chip-container">
                     <div
@@ -107,6 +102,15 @@
                     >
                         {{ course }}
                     </div>
+                </div>
+                <div class="other-input">
+                    <label for="otherCourse">Other Course(s)</label>
+                    <input
+                        type="text"
+                        id="otherCourse"
+                        v-model="otherCourse"
+                        placeholder="Enter other course number or class name"
+                    />
                 </div>
 
                 <label>Taken GenEd Types</label>
@@ -122,6 +126,16 @@
                     >
                         {{ gened }}
                     </div>
+                </div>
+
+                <div class="other-input">
+                    <label for="otherGened">Other GenEd Type(s)</label>
+                    <input
+                        type="text"
+                        id="otherGened"
+                        v-model="otherGened"
+                        placeholder="Enter other GenEd types or class name"
+                    />
                 </div>
 
                 <button type="submit" class="submit-btn">
@@ -145,7 +159,7 @@ import { supabase } from "../supabase";
 const router = useRouter();
 const isLoading = ref(false);
 
-// Form Data (using ref() for Composition API)
+
 const firstName = ref("");
 const lastName = ref("");
 const email = ref("");
@@ -155,8 +169,10 @@ const birthday = ref("");
 const international = ref("");
 const semester = ref("");
 const enrollment = ref("");
+const otherCourse = ref("");
+const otherGened = ref("");
 
-// Chip Data
+
 const courses = ref([
     "CIS 1001",
     "SCTC 2001",
@@ -221,14 +237,13 @@ const geneds = ref([
 const selectedCourses = ref([]);
 const selectedGeneds = ref([]);
 
-// Message Box State
+
 const message = ref({
     text: "",
-    type: "", // 'success' or 'error'
+    type: "", 
     visible: false,
 });
 
-// --- Functions ---
 
 const showMessage = (text, type) => {
     message.value.text = text;
@@ -249,44 +264,45 @@ const toggleGened = (gened) => {
 };
 
 const handleSubmit = async () => {
-  isLoading.value = true;
+    isLoading.value = true;
 
-  if (password.value !== confirmPassword.value) {
-    showMessage("Passwords do not match. Please re-enter.", 'error');
-    isLoading.value = false;
-    return;
-  }
+    if (password.value !== confirmPassword.value) {
+        showMessage("Passwords do not match. Please re-enter.", "error");
+        isLoading.value = false;
+        return;
+    }
 
-  try {
-    // Use a different variable name to avoid redeclaration
-    const { data: signUpData, error } = await supabase.auth.signUp({
-      email: email.value,
-      password: password.value,
-      options: {
-        data: {
-          firstName: firstName.value,
-          lastName: lastName.value,
-          date_of_birth: birthday.value || null,
-          international: international.value === 'yes',
-          semester: semester.value ? parseInt(semester.value) : null,
-          enrollment: enrollment.value || null,
-          taken_courses: selectedCourses.value,
-          geneds: selectedGeneds.value,
-        },
-      },
-    });
+    try {
+        const { data: signUpData, error } = await supabase.auth.signUp({
+            email: email.value,
+            password: password.value,
+            options: {
+                data: {
+                    firstName: firstName.value,
+                    lastName: lastName.value,
+                    date_of_birth: birthday.value || null,
+                    international: international.value === "yes",
+                    semester: semester.value ? parseInt(semester.value) : null,
+                    enrollment: enrollment.value || null,
+                    taken_courses: selectedCourses.value,
+                    geneds: selectedGeneds.value,
+                },
+            },
+        });
 
-    if (error) throw error;
+        if (error) throw error;
 
-    showMessage("Account created successfully! Check your email to verify.", 'success');
-    setTimeout(() => router.push('/login'), 2000);
-  } catch (err) {
-    showMessage(err.message || "Signup failed. Please try again.", 'error');
-  } finally {
-    isLoading.value = false;
-  }
+        showMessage(
+            "Account created successfully! Check your email to verify.",
+            "success"
+        );
+        setTimeout(() => router.push("/confirmation"), 2000);
+    } catch (err) {
+        showMessage(err.message || "Signup failed. Please try again.", "error");
+    } finally {
+        isLoading.value = false;
+    }
 };
-
 </script>
 
 <style scoped>
@@ -463,4 +479,14 @@ select:focus {
     cursor: pointer;
     line-height: 1;
 }
+
+.other-input label {
+  font-size: 15px;        
+  font-weight: 450;       
+  color: #313030;          
+  display: block;
+  margin-top: 10px;
+}
+
+
 </style>

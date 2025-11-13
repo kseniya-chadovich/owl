@@ -4,6 +4,7 @@ import Home from "./components/homepage.vue";
 import Login from "./components/login.vue";
 import Signup from "./components/signup.vue";
 import Chat from "./components/chatpage.vue";
+import Confirmation from "./components/confirmation.vue";
 const routes = [
     {
         path: "/",
@@ -14,13 +15,13 @@ const routes = [
     {
         path: "/login",
         name: "Login",
-        component: Login, 
+        component: Login,
     },
 
     {
         path: "/signup",
         name: "Signup",
-        component: Signup, 
+        component: Signup,
     },
 
     {
@@ -28,6 +29,12 @@ const routes = [
         name: "Chat",
         component: Chat,
     },
+
+    { 
+        path: "/confirmation",
+        name: "Confirmation", 
+        component: Confirmation
+     },
 ];
 
 const router = createRouter({
