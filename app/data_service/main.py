@@ -5,70 +5,93 @@ from typing import List, Dict, Any
 
 from app.data_service.supabase_client import get_supabase
 
+
 app = FastAPI(title="Student Data API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],   # change to your site later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# -------- Models ----------
+# -------------------------------
+# Models
+# -------------------------------
 
 class PersonalInfo(BaseModel):
-    user_id: str
+    user_id: str          # Supabase UUID
     full_name: str
     age: int
     is_international: bool
 
+
 class AcademicInfo(BaseModel):
     user_id: str
-    current_semester: str
+    current_semester: int          # <-- FIXED: integer now
     taken_courses: List[str]
     taken_geneds: List[str]
+
 
 class RegisterStudentPayload(BaseModel):
     personal: PersonalInfo
     academic: AcademicInfo
 
+
 class SchedulePayload(BaseModel):
     user_id: str
     schedule: Dict[str, Any]
 
-# -------- Health check ----------
+
+# -------------------------------
+# Health Check
+# -------------------------------
 
 @app.get("/")
 def root():
     return {"message": "Student Data API running!"}
 
-# -------- CRUD Endpoints ----------
+
+# -------------------------------
+# CRUD Endpoints
+# -------------------------------
 
 @app.post("/register-student")
 def register_student(payload: RegisterStudentPayload):
     supabase = get_supabase()
 
-    supabase.table("student_personal").upsert(
+    # Save personal info
+    result1 = supabase.table("student_personal").upsert(
         payload.personal.model_dump()
     ).execute()
 
-    supabase.table("student_academic").upsert(
+    # Save academic info
+    result2 = supabase.table("student_academic").upsert(
         payload.academic.model_dump()
     ).execute()
 
-    return {"message": "Saved student", "user_id": payload.personal.user_id}
+    return {
+        "message": "Student saved successfully",
+        "user_id": payload.personal.user_id
+    }
 
 
 @app.get("/students/{user_id}")
 def get_student(user_id: str):
     supabase = get_supabase()
 
-    personal = supabase.table("student_personal").select("*").eq("user_id", user_id).execute().data
-    academic = supabase.table("student_academic").select("*").eq("user_id", user_id).execute().data
+    personal = (
+        supabase.table("student_personal")
+        .select("*").eq("user_id", user_id).execute().data
+    )
+    academic = (
+        supabase.table("student_academic")
+        .select("*").eq("user_id", user_id).execute().data
+    )
 
     if not personal and not academic:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=404, detail="Student not found")
 
     return {
         "personal": personal[0] if personal else None,
@@ -79,23 +102,33 @@ def get_student(user_id: str):
 @app.post("/students/schedules")
 def save_schedule(payload: SchedulePayload):
     supabase = get_supabase()
-    supabase.table("student_schedules").upsert(payload.model_dump()).execute()
+    supabase.table("student_schedules").upsert(
+        payload.model_dump()
+    ).execute()
+
     return {"message": "Schedule saved"}
 
 
 @app.get("/students/schedules/{user_id}")
 def get_schedule(user_id: str):
     supabase = get_supabase()
-    res = supabase.table("student_schedules").select("*").eq("user_id", user_id).execute()
+    res = (
+        supabase.table("student_schedules")
+        .select("*").eq("user_id", user_id).execute()
+    )
+
     if not res.data:
-        raise HTTPException(status_code=404, detail="No schedule")
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
     return res.data[0]
 
 
 @app.delete("/students/{user_id}")
 def delete_student(user_id: str):
     supabase = get_supabase()
+
     supabase.table("student_personal").delete().eq("user_id", user_id).execute()
     supabase.table("student_academic").delete().eq("user_id", user_id).execute()
     supabase.table("student_schedules").delete().eq("user_id", user_id).execute()
-    return {"message": f"Deleted {user_id}"}
+
+    return {"message": f"Deleted user {user_id}"}

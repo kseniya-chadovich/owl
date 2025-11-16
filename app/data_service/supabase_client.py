@@ -1,34 +1,28 @@
 import os
 from pathlib import Path
-
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-
-# Always load .env from project root (the folder that contains "app" and ".env")
-BASE_DIR = Path(__file__).resolve().parent.parent
-env_path = BASE_DIR / ".env"
-load_dotenv(env_path)
-
+# Load .env from root
+BASE = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE / ".env")
 
 def get_supabase() -> Client:
     """
-    Create and return a Supabase client using env vars.
-
-    Required in .env:
-      SUPABASE_URL=...
-      SUPABASE_ANON_KEY=...
+    Create a Supabase client using the PUBLIC ANON KEY.
+    Safe for server-side RPC/DB operations as long as RLS is disabled or policies allow access.
     """
+
     url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_ANON_KEY")
+    anon_key = os.getenv("SUPABASE_ANON_KEY")
 
-    if not url or not key:
-        # Print to server log to help debugging
-        print("DEBUG Supabase URL:", url)
-        print("DEBUG Supabase ANON KEY exists:", bool(key))
+    print("DEBUG: Using ANON KEY for data-service")
 
-        raise RuntimeError(
-            "Supabase URL or key not set. Please check your .env file."
-        )
+    if not url or not anon_key:
+        raise RuntimeError("Missing SUPABASE_URL or SUPABASE_ANON_KEY in .env")
 
-    return create_client(url, key)
+    # Create client with anon key
+    client: Client = create_client(url, anon_key)
+
+    # No storage/postgrest auth needed when using anon key
+    return client

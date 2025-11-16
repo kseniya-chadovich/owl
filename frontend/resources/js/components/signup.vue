@@ -1,66 +1,41 @@
 <template>
     <div class="page-background">
+        <!-- Message Box -->
         <div v-if="message.visible" :class="['message-box', message.type]">
             {{ message.text }}
-            <button @click="message.visible = false" class="close-btn">
-                &times;
-            </button>
+            <button @click="message.visible = false" class="close-btn">&times;</button>
         </div>
 
         <div class="container">
             <h1>Student Signup / Profile Info</h1>
+
             <form @submit.prevent="handleSubmit">
+                
+                <!-- FIRST + LAST NAME -->
                 <label for="firstName">First Name</label>
-                <input
-                    type="text"
-                    id="firstName"
-                    v-model="firstName"
-                    required
-                />
+                <input type="text" id="firstName" v-model="firstName" required />
 
                 <label for="lastName">Last Name</label>
                 <input type="text" id="lastName" v-model="lastName" required />
 
+                <!-- EMAIL + PASSWORD -->
                 <label for="email">Email</label>
                 <input type="email" id="email" v-model="email" required />
 
                 <label for="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    v-model="password"
-                    required
-                />
+                <input type="password" id="password" v-model="password" required />
 
                 <label for="confirmPassword">Confirm Password</label>
-                <input
-                    type="password"
-                    id="confirmPassword"
-                    v-model="confirmPassword"
-                    required
-                />
+                <input type="password" id="confirmPassword" v-model="confirmPassword" required />
 
+                <!-- PROFILE FIELDS -->
                 <label for="birthday">Date of Birth</label>
                 <input type="date" id="birthday" v-model="birthday" />
 
                 <label>International Student</label>
                 <div class="radio-group">
-                    <label>
-                        <input
-                            type="radio"
-                            value="yes"
-                            v-model="international"
-                        />
-                        Yes
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="no"
-                            v-model="international"
-                        />
-                        No
-                    </label>
+                    <label><input type="radio" value="yes" v-model="international" /> Yes</label>
+                    <label><input type="radio" value="no" v-model="international" /> No</label>
                 </div>
 
                 <label for="semester">Current Semester</label>
@@ -71,72 +46,35 @@
 
                 <label>Enrollment Type</label>
                 <div class="radio-group">
-                    <label>
-                        <input
-                            type="radio"
-                            value="full-time"
-                            v-model="enrollment"
-                        />
-                        Full-time
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="part-time"
-                            v-model="enrollment"
-                        />
-                        Part-time
-                    </label>
+                    <label><input type="radio" value="full-time" v-model="enrollment" /> Full-time</label>
+                    <label><input type="radio" value="part-time" v-model="enrollment" /> Part-time</label>
                 </div>
 
+                <!-- COURSES -->
                 <label>Taken Courses</label>
                 <div class="chip-container">
-                    <div
-                        v-for="course in courses"
-                        :key="course"
-                        :class="[
-                            'chip',
-                            { selected: selectedCourses.includes(course) },
-                        ]"
-                        @click="toggleCourse(course)"
-                    >
+                    <div v-for="course in courses" :key="course"
+                        :class="['chip', { selected: selectedCourses.includes(course) }]"
+                        @click="toggleCourse(course)">
                         {{ course }}
                     </div>
                 </div>
-                <div class="other-input">
-                    <label for="otherCourse">Other Course(s)</label>
-                    <input
-                        type="text"
-                        id="otherCourse"
-                        v-model="otherCourse"
-                        placeholder="Enter other course number or class name"
-                    />
-                </div>
 
+                <label for="otherCourse">Other Course(s)</label>
+                <input type="text" id="otherCourse" v-model="otherCourse" placeholder="Enter other course" />
+
+                <!-- GENEDS -->
                 <label>Taken GenEd Types</label>
                 <div class="chip-container">
-                    <div
-                        v-for="gened in geneds"
-                        :key="gened"
-                        :class="[
-                            'chip',
-                            { selected: selectedGeneds.includes(gened) },
-                        ]"
-                        @click="toggleGened(gened)"
-                    >
+                    <div v-for="gened in geneds" :key="gened"
+                        :class="['chip', { selected: selectedGeneds.includes(gened) }]"
+                        @click="toggleGened(gened)">
                         {{ gened }}
                     </div>
                 </div>
 
-                <div class="other-input">
-                    <label for="otherGened">Other GenEd Type(s)</label>
-                    <input
-                        type="text"
-                        id="otherGened"
-                        v-model="otherGened"
-                        placeholder="Enter other GenEd types or class name"
-                    />
-                </div>
+                <label for="otherGened">Other GenEd Type(s)</label>
+                <input type="text" id="otherGened" v-model="otherGened" placeholder="Enter other GenEd" />
 
                 <button type="submit" class="submit-btn">
                     {{ isLoading ? "Submitting..." : "Submit" }}
@@ -159,7 +97,6 @@ import { supabase } from "../supabase";
 const router = useRouter();
 const isLoading = ref(false);
 
-
 const firstName = ref("");
 const lastName = ref("");
 const email = ref("");
@@ -172,138 +109,109 @@ const enrollment = ref("");
 const otherCourse = ref("");
 const otherGened = ref("");
 
-
 const courses = ref([
-    "CIS 1001",
-    "SCTC 2001",
-    "CIS 1051",
-    "CIS 1057",
-    "CIS 1166",
-    "CIS 2033",
-    "CIS 2107",
-    "CIS 2166",
-    "CIS 2168",
-    "CIS 3207",
-    "CIS 3223",
-    "CIS 3296",
-    "CIS 4398",
-    "CIS 4397",
-    "CIS 3203",
-    "CIS 3211",
-    "CIS 3217",
-    "CIS 3219",
-    "CIS 3242",
-    "CIS 3308",
-    "CIS 3319",
-    "CIS 3381",
-    "CIS 3441",
-    "CIS 3515",
-    "CIS 3605",
-    "CIS 3715",
-    "CIS 4282",
-    "CIS 4305",
-    "CIS 4307",
-    "CIS 4308",
-    "CIS 4319",
-    "CIS 4324",
-    "CIS 4331",
-    "CIS 4345",
-    "CIS 4350",
-    "CIS 4360",
-    "CIS 4382",
-    "CIS 4419",
-    "CIS 4515",
-    "CIS 4517",
-    "CIS 4523",
-    "CIS 4524",
-    "CIS 4615",
-    "MATH 1041",
-    "MATH 1042",
-    "PHYS 1061",
-    "PHYS 1062",
+    "CIS 1001","SCTC 2001","CIS 1051","CIS 1057","CIS 1166","CIS 2033","CIS 2107",
+    "CIS 2166","CIS 2168","CIS 3207","CIS 3223","CIS 3296","CIS 4398","CIS 4397",
+    "CIS 3203","CIS 3211","CIS 3217","CIS 3219","CIS 3242","CIS 3308","CIS 3319",
+    "CIS 3381","CIS 3441","CIS 3515","CIS 3605","CIS 3715","CIS 4282","CIS 4305",
+    "CIS 4307","CIS 4308","CIS 4319","CIS 4324","CIS 4331","CIS 4345","CIS 4350",
+    "CIS 4360","CIS 4382","CIS 4419","CIS 4515","CIS 4517","CIS 4523","CIS 4524",
+    "CIS 4615","MATH 1041","MATH 1042","PHYS 1061","PHYS 1062",
 ]);
-const geneds = ref([
-    "GA",
-    "GB",
-    "GD",
-    "GG",
-    "GS",
-    "GU",
-    "GW",
-    "GQ",
-    "GY",
-    "GZ",
-]);
+
+const geneds = ref(["GA","GB","GD","GG","GS","GU","GW","GQ","GY","GZ"]);
 const selectedCourses = ref([]);
 const selectedGeneds = ref([]);
 
-
-const message = ref({
-    text: "",
-    type: "", 
-    visible: false,
-});
-
+const message = ref({ text: "", type: "", visible: false });
 
 const showMessage = (text, type) => {
-    message.value.text = text;
-    message.value.type = type;
-    message.value.visible = true;
+    message.value = { text, type, visible: true };
 };
 
 const toggleCourse = (course) => {
     const idx = selectedCourses.value.indexOf(course);
-    if (idx === -1) selectedCourses.value.push(course);
-    else selectedCourses.value.splice(idx, 1);
+    idx === -1 ? selectedCourses.value.push(course) : selectedCourses.value.splice(idx, 1);
 };
 
 const toggleGened = (gened) => {
     const idx = selectedGeneds.value.indexOf(gened);
-    if (idx === -1) selectedGeneds.value.push(gened);
-    else selectedGeneds.value.splice(idx, 1);
+    idx === -1 ? selectedGeneds.value.push(gened) : selectedGeneds.value.splice(idx, 1);
 };
 
 const handleSubmit = async () => {
     isLoading.value = true;
 
     if (password.value !== confirmPassword.value) {
-        showMessage("Passwords do not match. Please re-enter.", "error");
+        showMessage("Passwords do not match.", "error");
         isLoading.value = false;
         return;
     }
 
     try {
-        const { data: signUpData, error } = await supabase.auth.signUp({
+        // 1️⃣ Create auth user
+        const { data, error } = await supabase.auth.signUp({
             email: email.value,
             password: password.value,
-            options: {
-                data: {
-                    firstName: firstName.value,
-                    lastName: lastName.value,
-                    date_of_birth: birthday.value || null,
-                    international: international.value === "yes",
-                    semester: semester.value ? parseInt(semester.value) : null,
-                    enrollment: enrollment.value || null,
-                    taken_courses: selectedCourses.value,
-                    geneds: selectedGeneds.value,
-                },
-            },
         });
 
         if (error) throw error;
 
-        showMessage(
-            "Account created successfully! Check your email to verify.",
-            "success"
-        );
-        setTimeout(() => router.push("/confirmation"), 2000);
+        const user = data.user;
+        if (!user) throw new Error("Sign-up succeeded but user is null");
+
+        const user_id = user.id; // UUID
+
+        // 2️⃣ Prepare payload for backend
+        const payload = {
+            personal: {
+                user_id,
+                full_name: `${firstName.value} ${lastName.value}`,
+                age: birthday.value ? calculateAge(birthday.value) : null,
+                is_international: international.value === "yes",
+            },
+            academic: {
+                user_id,
+                current_semester: semester.value ? parseInt(semester.value) : 1,
+                taken_courses: selectedCourses.value,
+                taken_geneds: selectedGeneds.value,
+            },
+        };
+
+        // 3️⃣ Save Personal + Academic info in your external DB
+        const res = await fetch("https://supabase-kqbi.onrender.com/register-student", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+            console.error(await res.text());
+            throw new Error("Failed saving student data");
+        }
+
+        showMessage("Account created successfully! Check your email.", "success");
+        setTimeout(() => router.push("/login"), 2000);
+
     } catch (err) {
-        showMessage(err.message || "Signup failed. Please try again.", "error");
+        showMessage(err.message || "Signup failed.", "error");
     } finally {
         isLoading.value = false;
     }
 };
+
+// Helper to calculate age
+function calculateAge(birth) {
+    const today = new Date();
+    const dob = new Date(birth);
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+    return age;
+}
+
 </script>
+
 
 <style scoped>
 .page-background {
