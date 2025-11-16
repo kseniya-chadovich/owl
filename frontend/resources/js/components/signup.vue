@@ -97,6 +97,9 @@ import { supabase } from "../supabase";
 const router = useRouter();
 const isLoading = ref(false);
 
+const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "https://supabase-kqbi.onrender.com";
+
+// form fields
 const firstName = ref("");
 const lastName = ref("");
 const email = ref("");
@@ -109,108 +112,161 @@ const enrollment = ref("");
 const otherCourse = ref("");
 const otherGened = ref("");
 
+// chips
 const courses = ref([
-    "CIS 1001","SCTC 2001","CIS 1051","CIS 1057","CIS 1166","CIS 2033","CIS 2107",
-    "CIS 2166","CIS 2168","CIS 3207","CIS 3223","CIS 3296","CIS 4398","CIS 4397",
-    "CIS 3203","CIS 3211","CIS 3217","CIS 3219","CIS 3242","CIS 3308","CIS 3319",
-    "CIS 3381","CIS 3441","CIS 3515","CIS 3605","CIS 3715","CIS 4282","CIS 4305",
-    "CIS 4307","CIS 4308","CIS 4319","CIS 4324","CIS 4331","CIS 4345","CIS 4350",
-    "CIS 4360","CIS 4382","CIS 4419","CIS 4515","CIS 4517","CIS 4523","CIS 4524",
-    "CIS 4615","MATH 1041","MATH 1042","PHYS 1061","PHYS 1062",
+  "CIS 1001", "SCTC 2001", "CIS 1051", "CIS 1057", "CIS 1166",
+  "CIS 2033", "CIS 2107", "CIS 2166", "CIS 2168", "CIS 3207",
+  "CIS 3223", "CIS 3296", "CIS 4398", "CIS 4397", "CIS 3203",
+  "CIS 3211", "CIS 3217", "CIS 3219", "CIS 3242", "CIS 3308",
+  "CIS 3319", "CIS 3381", "CIS 3441", "CIS 3515", "CIS 3605",
+  "CIS 3715", "CIS 4282", "CIS 4305", "CIS 4307", "CIS 4308",
+  "CIS 4319", "CIS 4324", "CIS 4331", "CIS 4345", "CIS 4350",
+  "CIS 4360", "CIS 4382", "CIS 4419", "CIS 4515", "CIS 4517",
+  "CIS 4523", "CIS 4524", "CIS 4615", "MATH 1041", "MATH 1042",
+  "PHYS 1061", "PHYS 1062",
 ]);
 
 const geneds = ref(["GA","GB","GD","GG","GS","GU","GW","GQ","GY","GZ"]);
+
 const selectedCourses = ref([]);
 const selectedGeneds = ref([]);
 
-const message = ref({ text: "", type: "", visible: false });
+// message state
+const message = ref({
+  text: "",
+  type: "",
+  visible: false,
+});
 
 const showMessage = (text, type) => {
-    message.value = { text, type, visible: true };
+  message.value.text = text;
+  message.value.type = type;
+  message.value.visible = true;
 };
 
 const toggleCourse = (course) => {
-    const idx = selectedCourses.value.indexOf(course);
-    idx === -1 ? selectedCourses.value.push(course) : selectedCourses.value.splice(idx, 1);
+  const i = selectedCourses.value.indexOf(course);
+  if (i === -1) selectedCourses.value.push(course);
+  else selectedCourses.value.splice(i, 1);
 };
 
 const toggleGened = (gened) => {
-    const idx = selectedGeneds.value.indexOf(gened);
-    idx === -1 ? selectedGeneds.value.push(gened) : selectedGeneds.value.splice(idx, 1);
+  const i = selectedGeneds.value.indexOf(gened);
+  if (i === -1) selectedGeneds.value.push(gened);
+  else selectedGeneds.value.splice(i, 1);
+};
+
+const parseCommaList = (raw) => {
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
 };
 
 const handleSubmit = async () => {
-    isLoading.value = true;
+  isLoading.value = true;
 
-    if (password.value !== confirmPassword.value) {
-        showMessage("Passwords do not match.", "error");
-        isLoading.value = false;
-        return;
+  if (password.value !== confirmPassword.value) {
+    showMessage("Passwords do not match. Please re-enter.", "error");
+    isLoading.value = false;
+    return;
+  }
+
+  try {
+    // 1) Sign up in Supabase Auth
+    const fullName = `${firstName.value} ${lastName.value}`.trim();
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.value,
+      password: password.value,
+      options: {
+        data: {
+          display_name: fullName,
+          first_name: firstName.value,
+          last_name: lastName.value,
+          date_of_birth: birthday.value || null,
+          international: international.value === "yes",
+          semester: semester.value ? Number(semester.value) : null,
+          enrollment: enrollment.value || null,
+          taken_courses: selectedCourses.value,
+          geneds: selectedGeneds.value,
+        },
+      },
+    });
+
+    console.log("signUp response:", data, error);
+
+    if (error) {
+      throw error;
     }
 
-    try {
-        // 1️⃣ Create auth user
-        const { data, error } = await supabase.auth.signUp({
-            email: email.value,
-            password: password.value,
-        });
-
-        if (error) throw error;
-
-        const user = data.user;
-        if (!user) throw new Error("Sign-up succeeded but user is null");
-
-        const user_id = user.id; // UUID
-
-        // 2️⃣ Prepare payload for backend
-        const payload = {
-            personal: {
-                user_id,
-                full_name: `${firstName.value} ${lastName.value}`,
-                age: birthday.value ? calculateAge(birthday.value) : null,
-                is_international: international.value === "yes",
-            },
-            academic: {
-                user_id,
-                current_semester: semester.value ? parseInt(semester.value) : 1,
-                taken_courses: selectedCourses.value,
-                taken_geneds: selectedGeneds.value,
-            },
-        };
-
-        // 3️⃣ Save Personal + Academic info in your external DB
-        const res = await fetch("https://supabase-kqbi.onrender.com/register-student", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) {
-            console.error(await res.text());
-            throw new Error("Failed saving student data");
-        }
-
-        showMessage("Account created successfully! Check your email.", "success");
-        setTimeout(() => router.push("/login"), 2000);
-
-    } catch (err) {
-        showMessage(err.message || "Signup failed.", "error");
-    } finally {
-        isLoading.value = false;
+    const userId = data?.user?.id;
+    if (!userId) {
+      throw new Error("Signup succeeded, but no user id returned.");
     }
+
+    // 2) Prepare payload for data-service
+    const nowYear = new Date().getFullYear();
+    let age = null;
+    if (birthday.value) {
+      const birthYear = new Date(birthday.value).getFullYear();
+      if (!isNaN(birthYear)) {
+        age = nowYear - birthYear;
+      }
+    }
+
+    const extraCourses = parseCommaList(otherCourse.value);
+    const extraGeneds = parseCommaList(otherGened.value);
+
+    const personal = {
+      user_id: userId,
+      full_name: fullName,
+      age: age ?? 0,                 // backend expects int (or Optional[int])
+      is_international: international.value === "yes",
+    };
+
+    const academic = {
+      user_id: userId,
+      current_semester: semester.value ? Number(semester.value) : 0,
+      taken_courses: [...selectedCourses.value, ...extraCourses],
+      taken_geneds: [...selectedGeneds.value, ...extraGeneds],
+    };
+
+    console.log("Sending to data API:", { personal, academic });
+
+    const resp = await fetch(`${DATA_API_URL}/register-student`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ personal, academic }),
+    });
+
+    const body = await resp.json().catch(() => ({}));
+    console.log("Data API response:", resp.status, body);
+
+    if (!resp.ok) {
+      throw new Error(
+        body?.detail || body?.message || "Failed to save student profile to data API."
+      );
+    }
+
+    // All good
+    showMessage(
+      "Account created and profile saved! Check your email to verify.",
+      "success"
+    );
+    setTimeout(() => router.push("/confirmation"), 2500);
+  } catch (err) {
+    console.error("Signup error:", err);
+    showMessage(err.message || "Signup failed. Please try again.", "error");
+  } finally {
+    isLoading.value = false;
+  }
 };
-
-// Helper to calculate age
-function calculateAge(birth) {
-    const today = new Date();
-    const dob = new Date(birth);
-    let age = today.getFullYear() - dob.getFullYear();
-    const m = today.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-    return age;
-}
-
 </script>
+
 
 
 <style scoped>
