@@ -207,43 +207,105 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import { supabase } from "../supabase";
 
-const AI_URL = "https://your-ai-service.onrender.com";
-const DATA_URL = "https://your-data-service.onrender.com";
+const AI_URL = "https://scheduling-assistant-zl2c.onrender.com";
+const DATA_URL = "https://supabase-kqbi.onrender.com";
 
 const user = ref(null);
 const messages = ref([]);
 const draftMessage = ref("");
 const isLoading = ref(false);
 
+// Schedule selection
+const selectedScheduleIndex = ref(null);
+const selectedMessageId = ref(null);
+
+// Only ONE confirm message should exist at any time
+const confirmMessageId = ref(null);
+
+// Suggestions
+const suggestions = [
+  "No morning classes",
+  "Only 12 credits",
+  "I prefer T/Th classes",
+  "Avoid online courses",
+];
+
+// Message IDs
 let messageCounter = 0;
 const newId = () => `msg-${messageCounter++}`;
 
+// ------------------ LOAD USER + CONVERSATION ------------------
 const loadUser = async () => {
   const { data } = await supabase.auth.getUser();
   user.value = data?.user;
-
   if (!user.value) return;
 
-  const resp = await axios.get(`${DATA_URL}/students/conversation/${user.value.id}`);
-  if (resp.data?.conversation?.length) {
-    messages.value = resp.data.conversation.map((t) => ({
-      id: newId(),
-      role: t.startsWith("User:") ? "user" : "assistant",
-      text: t.replace("User: ", "")
-    }));
-  } else {
+  const resp = await axios.get(
+    `${DATA_URL}/students/conversation/${user.value.id}`
+  );
+
+  const stored = resp.data?.conversation || [];
+
+  if (!stored.length) {
     messages.value = [
       {
         id: newId(),
         role: "assistant",
-        text: "Hi! I'm your scheduling assistant."
-      }
+        text: "Hi! I'm your scheduling assistant.",
+      },
     ];
+    return;
   }
+
+  // Rehydrate chat messages (including schedule blocks)
+  messages.value = stored.map((t) => {
+    // Schedule blocks stored as JSON
+    try {
+      if (t.startsWith("{") && t.includes("schedules")) {
+        const parsed = JSON.parse(t);
+        return {
+          id: newId(),
+          role: "assistant",
+          text: "Here are your schedules:",
+          schedules: parsed.schedules,
+        };
+      }
+    } catch (e) {}
+
+    // User messages
+    if (t.startsWith("User:")) {
+      return {
+        id: newId(),
+        role: "user",
+        text: t.replace("User: ", ""),
+      };
+    }
+
+    // Assistant plain text
+    return { id: newId(), role: "assistant", text: t };
+  });
 };
 
 onMounted(loadUser);
 
+// ------------------ SAVE CONVERSATION ------------------
+const saveConversation = async () => {
+  if (!user.value) return;
+
+  const allLines = messages.value.map((m) => {
+    if (m.schedules) {
+      return JSON.stringify({ schedules: m.schedules });
+    }
+    return m.role === "user" ? `User: ${m.text}` : m.text;
+  });
+
+  await axios.post(`${DATA_URL}/students/conversation`, {
+    user_id: user.value.id,
+    conversation: allLines,
+  });
+};
+
+// ------------------ SEND MESSAGE TO AI ------------------
 const sendMessage = async () => {
   if (!draftMessage.value.trim() || !user.value) return;
 
@@ -257,10 +319,9 @@ const sendMessage = async () => {
   try {
     const { data } = await axios.post(`${AI_URL}/dialog`, {
       user_id: user.value.id,
-      message: text
+      message: text,
     });
 
-    // Display schedules or text
     if (Array.isArray(data.schedules)) {
       messages.value.push({
         id: newId(),
@@ -268,31 +329,144 @@ const sendMessage = async () => {
         text: "Here are your schedules:",
         schedules: data.schedules,
       });
+
+      // If they generate new schedules, clear old confirmation
+      confirmMessageId.value = null;
     } else {
       messages.value.push({
         id: newId(),
         role: "assistant",
-        text: data.payload ? "Updated your preferences!" : "Okay!"
+        text: data.payload ? "Updated your preferences!" : "Okay!",
       });
     }
 
-    // SAVE conversation to DB
-    const allLines = messages.value.map((m) =>
-      m.role === "user" ? `User: ${m.text}` : m.text
-    );
-
-    await axios.post(`${DATA_URL}/students/conversation`, {
-      user_id: user.value.id,
-      conversation: allLines,
-    });
-  } catch (err) {
-    messages.value.push({
-      id: newId(),
-      role: "assistant",
-      text: "The AI service is unreachable."
-    });
+    await saveConversation();
   } finally {
     isLoading.value = false;
   }
+};
+
+// ------------------ SELECT SCHEDULE (One confirm message only) ------------------
+const handleSelectSchedule = (index, message) => {
+  selectedScheduleIndex.value = index;
+  selectedMessageId.value = message.id;
+
+  const n = index + 1;
+
+  if (!confirmMessageId.value) {
+    // Create confirm message
+    const msgId = newId();
+    confirmMessageId.value = msgId;
+
+    messages.value.push({
+      id: msgId,
+      role: "assistant",
+      text: `You're looking at Schedule ${n}. Do you want to confirm it or add more requirements?`,
+      confirmOptions: ["Confirm", "Add more requirements"],
+    });
+  } else {
+    // Update existing confirm message
+    const msg = messages.value.find((m) => m.id === confirmMessageId.value);
+    if (msg) {
+      msg.text = `You're looking at Schedule ${n}. Do you want to confirm it or add more requirements?`;
+    }
+  }
+};
+
+// ------------------ CONFIRM / ADD MORE ------------------
+const handleConfirmOption = async (option) => {
+  const schedMsg = messages.value.find((m) => m.id === selectedMessageId.value);
+  const selected = schedMsg.schedules[selectedScheduleIndex.value];
+
+  if (option === "Confirm") {
+    // Format schedule description
+    const scheduleTextLines = selected.courses
+      .map(
+        (c) =>
+          `${c.course} | ${c.day_time || "TBD"} | ${c.credits}cr | ${
+            c.category
+          }`
+      )
+      .join("\n");
+
+    messages.value.push({
+      id: newId(),
+      role: "user",
+      text: `I confirm this schedule:\n${scheduleTextLines}`,
+    });
+
+    // Save to DB
+    await axios.post(`${DATA_URL}/students/schedules`, {
+      user_id: user.value.id,
+      schedule: selected,
+    });
+
+    await saveConversation();
+
+    // RESET AI STATE (fresh start for next conversation)
+    await axios.post(`${AI_URL}/reset`, {
+      user_id: user.value.id,
+    });
+
+    messages.value.push({
+      id: newId(),
+      role: "assistant",
+      text:
+        "Your schedule has been saved and your AI session has been reset! 🎉\nYou can start a new request anytime.",
+    });
+
+    confirmMessageId.value = null;
+    return;
+  }
+
+  // Add more requirements
+  messages.value.push({
+    id: newId(),
+    role: "user",
+    text: "I want to add more requirements.",
+  });
+
+  messages.value.push({
+    id: newId(),
+    role: "assistant",
+    text: "Sure! What would you like to adjust?",
+  });
+
+  confirmMessageId.value = null;
+  await saveConversation();
+};
+
+// ------------------ SUGGESTION BUTTONS ------------------
+const applySuggestion = (s) => {
+  draftMessage.value = s;
+};
+
+// ------------------ AUTO TEXTAREA RESIZE ------------------
+const textareaRef = ref(null);
+const autoResize = () => {
+  const el = textareaRef.value;
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+};
+
+// ------------------ RESET (FULL WIPE) ------------------
+const resetConversation = async () => {
+  if (!user.value) return;
+
+  await axios.post(`${AI_URL}/reset`, { user_id: user.value.id });
+  await axios.delete(`${DATA_URL}/students/${user.value.id}`);
+
+  messages.value = [
+    {
+      id: newId(),
+      role: "assistant",
+      text: "Session reset! How can I help you?",
+    },
+  ];
+
+  selectedScheduleIndex.value = null;
+  selectedMessageId.value = null;
+  confirmMessageId.value = null;
 };
 </script>
