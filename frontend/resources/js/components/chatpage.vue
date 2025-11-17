@@ -203,204 +203,96 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
+import { supabase } from "../supabase";
 
-const BASE_URL = "https://scheduling-assistant-zl2c.onrender.com";
-const USER_ID = "mock-user";
-const STORAGE_KEY = "scheduling_assistant_chat";
+const AI_URL = "https://your-ai-service.onrender.com";
+const DATA_URL = "https://your-data-service.onrender.com";
+
+const user = ref(null);
+const messages = ref([]);
+const draftMessage = ref("");
+const isLoading = ref(false);
 
 let messageCounter = 0;
 const newId = () => `msg-${messageCounter++}`;
 
-const suggestions = [
-  "I want classes only on Tuesdays and Thursdays",
-  "Avoid early morning classes before 10 AM",
-  "Need a lunch break between 12–1 PM",
-  "Don't want classes with Professor Smith",
-];
+const loadUser = async () => {
+  const { data } = await supabase.auth.getUser();
+  user.value = data?.user;
 
-const messages = ref([
-  {
-    id: newId(),
-    role: "assistant",
-    text: "Hi! I'm your scheduling assistant. Tell me what you'd like for next semester.",
-  },
-]);
+  if (!user.value) return;
 
-const draftMessage = ref("");
-const isLoading = ref(false);
-const errorMessage = ref("");
-const textareaRef = ref(null);
-const selectedScheduleIndex = ref(null);
-const selectedMessageId = ref(null);
-const currentConfirmMessageId = ref(null);
-
-const autoResize = () => {
-  const el = textareaRef.value;
-  if (el) {
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
-  }
-};
-
-// localStorage persistence
-onMounted(() => {
-  const savedData = localStorage.getItem(STORAGE_KEY);
-  if (savedData) {
-    try {
-      const parsed = JSON.parse(savedData);
-      messages.value = parsed.messages || messages.value;
-      draftMessage.value = parsed.draftMessage || "";
-    } catch (e) {
-      console.warn("Failed to load chat history:", e);
-    }
-  }
-});
-
-watch(
-  [messages, draftMessage],
-  ([newMessages, newDraft]) => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        messages: newMessages,
-        draftMessage: newDraft,
-      })
-    );
-  },
-  { deep: true }
-);
-
-const applySuggestion = (text) => {
-  draftMessage.value = text;
-};
-
-const resetConversation = async () => {
-  localStorage.removeItem(STORAGE_KEY);
-  messages.value = [
-    {
+  const resp = await axios.get(`${DATA_URL}/students/conversation/${user.value.id}`);
+  if (resp.data?.conversation?.length) {
+    messages.value = resp.data.conversation.map((t) => ({
       id: newId(),
-      role: "assistant",
-      text: "Conversation reset. Share your new scheduling preferences whenever you're ready.",
-    },
-  ];
-  draftMessage.value = "";
-  errorMessage.value = "";
-  try {
-    await axios.post(`${BASE_URL}/reset`, { user_id: USER_ID }, { timeout: 30000 });
-  } catch (err) {
-    console.warn("Reset failed:", err);
+      role: t.startsWith("User:") ? "user" : "assistant",
+      text: t.replace("User: ", "")
+    }));
+  } else {
+    messages.value = [
+      {
+        id: newId(),
+        role: "assistant",
+        text: "Hi! I'm your scheduling assistant."
+      }
+    ];
   }
 };
+
+onMounted(loadUser);
 
 const sendMessage = async () => {
-  const text = draftMessage.value.trim();
-  if (!text || isLoading.value) return;
-  errorMessage.value = "";
+  if (!draftMessage.value.trim() || !user.value) return;
+
+  const text = draftMessage.value;
   draftMessage.value = "";
+
   messages.value.push({ id: newId(), role: "user", text });
+
   isLoading.value = true;
 
   try {
-    const payload = { user_id: USER_ID, message: text };
-    const { data } = await axios.post(`${BASE_URL}/dialog`, payload, { timeout: 60000 });
-    handleAssistantResponse(data);
+    const { data } = await axios.post(`${AI_URL}/dialog`, {
+      user_id: user.value.id,
+      message: text
+    });
+
+    // Display schedules or text
+    if (Array.isArray(data.schedules)) {
+      messages.value.push({
+        id: newId(),
+        role: "assistant",
+        text: "Here are your schedules:",
+        schedules: data.schedules,
+      });
+    } else {
+      messages.value.push({
+        id: newId(),
+        role: "assistant",
+        text: data.payload ? "Updated your preferences!" : "Okay!"
+      });
+    }
+
+    // SAVE conversation to DB
+    const allLines = messages.value.map((m) =>
+      m.role === "user" ? `User: ${m.text}` : m.text
+    );
+
+    await axios.post(`${DATA_URL}/students/conversation`, {
+      user_id: user.value.id,
+      conversation: allLines,
+    });
   } catch (err) {
-    console.error("Failed to reach scheduling API:", err);
-    errorMessage.value =
-      "Failed to reach the scheduling assistant. Double-check your API URL or try again in a moment.";
     messages.value.push({
       id: newId(),
       role: "assistant",
-      text: "I couldn't process that request because the backend isn't responding.",
+      text: "The AI service is unreachable."
     });
   } finally {
     isLoading.value = false;
   }
-};
-
-// ---- Handle backend data
-const handleAssistantResponse = (data) => {
-  if (!data || typeof data !== "object") {
-    messages.value.push({
-      id: newId(),
-      role: "assistant",
-      text: "Received an unexpected response from the scheduler service.",
-    });
-    return;
-  }
-
-  const { payload, schedules } = data;
-  if (Array.isArray(schedules) && schedules.length) {
-    messages.value.push({
-      id: newId(),
-      role: "assistant",
-      text: "Here are your possible schedules:",
-      schedules,
-    });
-  } else {
-    const summary = buildAssistantReply(data);
-    messages.value.push({ id: newId(), role: "assistant", text: summary });
-  }
-};
-
-// ---- Card selection
-const handleSelectSchedule = (index, message) => {
-  selectedScheduleIndex.value = index;
-  selectedMessageId.value = message.id;
-
-  // Remove previous confirmation message (if any)
-  if (currentConfirmMessageId.value) {
-    const idx = messages.value.findIndex((m) => m.id === currentConfirmMessageId.value);
-    if (idx !== -1) messages.value.splice(idx, 1);
-  }
-
-  const confirmMsg = {
-    id: newId(),
-    role: "assistant",
-    text: `You selected Schedule ${index + 1}. Do you want to confirm this schedule?`,
-    confirmOptions: ["Yes", "No"],
-  };
-  messages.value.push(confirmMsg);
-  currentConfirmMessageId.value = confirmMsg.id;
-};
-
-// ---- Handle Yes / No
-const handleConfirmOption = (choice) => {
-  if (choice === "Yes" && selectedScheduleIndex.value !== null) {
-    messages.value.push({
-      id: newId(),
-      role: "assistant",
-      text:
-        "🎉 Amazing! I’m happy I could help you build your routine for next semester. " +
-        "Your schedule will be saved to your profile and bookmarked as your current plan.",
-    });
-  } else {
-    selectedScheduleIndex.value = null;
-    selectedMessageId.value = null;
-    messages.value.push({
-      id: newId(),
-      role: "assistant",
-      text: "Okay! You can select another schedule if you’d like.",
-    });
-  }
-  currentConfirmMessageId.value = null;
-};
-
-const buildAssistantReply = (data) => {
-  const { payload, schedules } = data;
-  const parts = [];
-  if (payload) parts.push(`Updated preferences:\n${JSON.stringify(payload, null, 2)}`);
-  if (Array.isArray(schedules) && schedules.length) {
-    const summaries = schedules.map((schedule, index) => {
-      const courses = (schedule.courses || []).map(
-        (c) => `${c.course} | ${c.day_time} | ${c.credits}cr`
-      );
-      return [`--- Schedule ${index + 1} ---`, ...courses].join("\n");
-    });
-    parts.push(summaries.join("\n\n"));
-  } else parts.push("No schedules were generated for these preferences yet.");
-  return parts.join("\n\n");
 };
 </script>
