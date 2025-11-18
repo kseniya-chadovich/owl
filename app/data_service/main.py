@@ -107,3 +107,10 @@ def delete_student(user_id: str):
     db.table("student_conversations").delete().eq("user_id", user_id).execute()
 
     return {"message": f"Deleted {user_id}"}
+
+
+@app.delete("/students/conversation/{user_id}")
+def delete_conversation(user_id: str):
+    db = get_supabase()
+    db.table("student_conversations").delete().eq("user_id", user_id).execute()
+    return {"message": "Conversation cleared"}
