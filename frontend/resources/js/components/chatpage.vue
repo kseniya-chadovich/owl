@@ -10,10 +10,18 @@
       </p>
     </div>
 
+    <!-- INITIAL LOADING SPINNER -->
+      <div v-if="isInitializing" class="py-20 text-center text-zinc-500">
+        <div class="animate-spin h-10 w-10 border-4 border-[#800020] border-t-transparent rounded-full mx-auto"></div>
+      <p class="mt-4 text-lg">Loading your chat session…</p>
+    </div>
+
     <!-- CHAT CONTAINER -->
     <div
+      v-else
       class="w-full max-w-3xl bg-white border border-zinc-200 rounded-3xl shadow-sm flex flex-col overflow-hidden"
     >
+
       <!-- STATUS -->
       <div
         v-if="errorMessage"
@@ -210,20 +218,25 @@ import { supabase } from "../supabase";
 const AI_URL = "https://scheduling-assistant-zl2c.onrender.com";
 const DATA_URL = "https://supabase-kqbi.onrender.com";
 
-// UI state
+/* ----------------------------------------
+   STATE VARIABLES
+---------------------------------------- */
 const user = ref(null);
 const messages = ref([]);
 const draftMessage = ref("");
 const isLoading = ref(false);
 
-// Schedule selection
+// Show spinner while loading conversation from DB
+const isInitializing = ref(true);
+
+// Schedule selection state
 const selectedScheduleIndex = ref(null);
 const selectedMessageId = ref(null);
 
-// Only one confirm block in chat
+// Only one confirm message can exist
 const confirmMessageId = ref(null);
 
-// Suggestions
+// Suggested shortcut chips
 const suggestions = [
   "No morning classes",
   "Only 12 credits",
@@ -231,18 +244,22 @@ const suggestions = [
   "Avoid online courses",
 ];
 
-// ID generation
+// Helpers
 let messageCounter = 0;
 const newId = () => `msg-${messageCounter++}`;
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// ---------------------------
-// LOAD USER + PERSISTED CHAT
-// ---------------------------
+/* ----------------------------------------
+   LOAD USER + CONVERSATION FROM DB
+---------------------------------------- */
 const loadUser = async () => {
   const { data } = await supabase.auth.getUser();
   user.value = data?.user;
 
-  if (!user.value) return;
+  if (!user.value) {
+    isInitializing.value = false;
+    return;
+  }
 
   const resp = await axios.get(
     `${DATA_URL}/students/conversation/${user.value.id}`
@@ -250,6 +267,7 @@ const loadUser = async () => {
 
   const stored = resp.data?.conversation || [];
 
+  // If no saved messages → new session
   if (!stored.length) {
     messages.value = [
       {
@@ -258,11 +276,12 @@ const loadUser = async () => {
         text: "Hi! I'm your scheduling assistant.",
       },
     ];
+    isInitializing.value = false;
     return;
   }
 
+  // Rehydrate chat messages including schedule blocks
   messages.value = stored.map((t) => {
-    // rehydrate schedules
     try {
       if (t.startsWith("{") && t.includes("schedules")) {
         const parsed = JSON.parse(t);
@@ -273,7 +292,7 @@ const loadUser = async () => {
           schedules: parsed.schedules,
         };
       }
-    } catch (e) {}
+    } catch {}
 
     if (t.startsWith("User:")) {
       return {
@@ -285,20 +304,25 @@ const loadUser = async () => {
 
     return { id: newId(), role: "assistant", text: t };
   });
+
+  isInitializing.value = false;
 };
 
-onMounted(loadUser);
+/* ----------------------------------------
+   MOUNT APP
+---------------------------------------- */
+onMounted(async () => {
+  await loadUser();
+});
 
-// ---------------------------
-// SAVE CHAT TO DB
-// ---------------------------
+/* ----------------------------------------
+   SAVE CHAT TO DATABASE
+---------------------------------------- */
 const saveConversation = async () => {
   if (!user.value) return;
 
   const lines = messages.value.map((m) => {
-    if (m.schedules) {
-      return JSON.stringify({ schedules: m.schedules });
-    }
+    if (m.schedules) return JSON.stringify({ schedules: m.schedules });
     return m.role === "user" ? `User: ${m.text}` : m.text;
   });
 
@@ -308,9 +332,9 @@ const saveConversation = async () => {
   });
 };
 
-// ---------------------------
-// SEND MESSAGE TO AI
-// ---------------------------
+/* ----------------------------------------
+   SEND MESSAGE TO AI SERVICE
+---------------------------------------- */
 const sendMessage = async () => {
   if (!draftMessage.value.trim() || !user.value) return;
 
@@ -318,6 +342,16 @@ const sendMessage = async () => {
   draftMessage.value = "";
 
   messages.value.push({ id: newId(), role: "user", text });
+
+  // If user types something instead of using Confirm/Add More buttons,
+// it means we should exit confirmation mode.
+  if (confirmMessageId.value) {
+    const idx = messages.value.findIndex(m => m.id === confirmMessageId.value);
+    if (idx !== -1) messages.value.splice(idx, 1);
+    
+    confirmMessageId.value = null;
+  }
+
 
   isLoading.value = true;
 
@@ -334,8 +368,6 @@ const sendMessage = async () => {
         text: "Here are your schedules:",
         schedules: data.schedules,
       });
-
-      // Clear old confirm question
       confirmMessageId.value = null;
     } else {
       messages.value.push({
@@ -351,15 +383,16 @@ const sendMessage = async () => {
   }
 };
 
-// ---------------------------
-// SELECT SCHEDULE (single confirm block)
-// ---------------------------
+/* ----------------------------------------
+   SELECT A SCHEDULE (ONE CONFIRM MESSAGE)
+---------------------------------------- */
 const handleSelectSchedule = (index, message) => {
   selectedScheduleIndex.value = index;
   selectedMessageId.value = message.id;
 
   const n = index + 1;
 
+  // If confirm box doesn't exist → create one
   if (!confirmMessageId.value) {
     const msgId = newId();
     confirmMessageId.value = msgId;
@@ -370,7 +403,9 @@ const handleSelectSchedule = (index, message) => {
       text: `You're looking at Schedule ${n}. Do you want to confirm it or add more requirements?`,
       confirmOptions: ["Confirm", "Add more requirements"],
     });
-  } else {
+  }
+  // If confirm exists → update it
+  else {
     const msg = messages.value.find((m) => m.id === confirmMessageId.value);
     if (msg) {
       msg.text = `You're looking at Schedule ${n}. Do you want to confirm it or add more requirements?`;
@@ -378,15 +413,15 @@ const handleSelectSchedule = (index, message) => {
   }
 };
 
-// ---------------------------
-// CONFIRM / ADD MORE
-// ---------------------------
+/* ----------------------------------------
+   CONFIRM / ADD MORE
+---------------------------------------- */
 const handleConfirmOption = async (option) => {
   const schedMsg = messages.value.find((m) => m.id === selectedMessageId.value);
   const selected = schedMsg.schedules[selectedScheduleIndex.value];
 
+  /* ---------- CONFIRM SCHEDULE ---------- */
   if (option === "Confirm") {
-    // Format full schedule
     const scheduleTextLines = selected.courses
       .map(
         (c) =>
@@ -402,36 +437,54 @@ const handleConfirmOption = async (option) => {
       text: `I confirm this schedule:\n${scheduleTextLines}`,
     });
 
-    // (1) Save schedule
+    // Save chosen schedule
     await axios.post(`${DATA_URL}/students/schedules`, {
       user_id: user.value.id,
       schedule: selected,
     });
 
-    // (2) Save final conversation
+    // Save final conversation
     await saveConversation();
 
-    // (3) Reset AI state ONLY
+    // Reset AI STATE only
     await axios.post(`${AI_URL}/reset`, {
       user_id: user.value.id,
     });
 
-    // (4) Delete DB conversation (start fresh next time)
+    // Reset DB conversation
     await axios.delete(
       `${DATA_URL}/students/conversation/${user.value.id}`
     );
 
-    // (5) Reset UI chat to fresh start
+    /* ---------- COUNTDOWN UI ---------- */
+    let countdown = 5;
+    const countdownMsgId = newId();
+
+    messages.value.push({
+      id: countdownMsgId,
+      role: "assistant",
+      text: `Your schedule has been saved! 🎉\nResetting in ${countdown}…`,
+    });
+
+    while (countdown > 0) {
+      await wait(1000);
+      countdown--;
+
+      const msg = messages.value.find((m) => m.id === countdownMsgId);
+      if (msg) {
+        msg.text = `Your schedule has been saved! 🎉\nResetting in ${countdown}…`;
+      }
+    }
+
+    // Finished resetting
     messages.value = [
       {
         id: newId(),
         role: "assistant",
-        text:
-          "Your schedule has been saved and your session has been reset! 🎉\nYou can now start planning your next semester.",
+        text: "Session reset! Let's plan your next semester. 📚",
       },
     ];
 
-    // Clear state
     confirmMessageId.value = null;
     selectedScheduleIndex.value = null;
     selectedMessageId.value = null;
@@ -439,9 +492,7 @@ const handleConfirmOption = async (option) => {
     return;
   }
 
-  // -------------------------------
-  // ADD MORE REQUIREMENTS
-  // -------------------------------
+  /* ---------- ADD MORE REQUIREMENTS ---------- */
   messages.value.push({
     id: newId(),
     role: "user",
@@ -455,20 +506,19 @@ const handleConfirmOption = async (option) => {
   });
 
   confirmMessageId.value = null;
-
   await saveConversation();
 };
 
-// ---------------------------
-// SUGGESTIONS
-// ---------------------------
+/* ----------------------------------------
+   SUGGESTION BUTTONS
+---------------------------------------- */
 const applySuggestion = (s) => {
   draftMessage.value = s;
 };
 
-// ---------------------------
-// TEXTAREA AUTO RESIZE
-// ---------------------------
+/* ----------------------------------------
+   AUTO RESIZE TEXTAREA
+---------------------------------------- */
 const textareaRef = ref(null);
 const autoResize = () => {
   const el = textareaRef.value;
@@ -477,15 +527,13 @@ const autoResize = () => {
   el.style.height = el.scrollHeight + "px";
 };
 
-// ---------------------------
-// MANUAL RESET BUTTON
-// ---------------------------
+/* ----------------------------------------
+   MANUAL RESET BUTTON
+---------------------------------------- */
 const resetConversation = async () => {
   if (!user.value) return;
 
   await axios.post(`${AI_URL}/reset`, { user_id: user.value.id });
-
-  // Clear ONLY conversation + schedules
   await axios.delete(`${DATA_URL}/students/conversation/${user.value.id}`);
 
   messages.value = [
