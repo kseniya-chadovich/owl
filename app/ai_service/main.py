@@ -28,20 +28,25 @@ def root():
 @app.post("/dialog")
 async def dialog(request: Request):
     data = await request.json()
+
     user_id = data.get("user_id")
     message = data.get("message", "").strip()
+    incoming_academic = data.get("academic") or {}
 
     if not user_id:
         return {"error": "Missing user_id."}
     if not message:
         return {"error": "Missing message."}
 
-    # Create state for new user
+    # Initialize state if not present
     if user_id not in user_state:
         user_state[user_id] = {
             "conversation": [SCHEMA_DESCRIPTION],
-            "student_data": {},
+            "student_data": incoming_academic,
         }
+    else:
+        # Update academic info every request
+        user_state[user_id]["student_data"] = incoming_academic
 
     state = user_state[user_id]
 
@@ -50,7 +55,7 @@ async def dialog(request: Request):
             client=client,
             model_name=MODEL_NAME,
             message=message,
-            student_data=state["student_data"],
+            student_data=state["student_data"],       # <-- academic included
             conversation_history=state["conversation"],
             num_schedules=3,
             temperature=0.2,
@@ -58,7 +63,7 @@ async def dialog(request: Request):
     except Exception as e:
         return {"error": str(e)}
 
-    # Update state
+    # Update conversation history
     state["conversation"] = result["conversation"]
 
     return {
@@ -67,6 +72,7 @@ async def dialog(request: Request):
         "schedules": result["schedules"],
         "conversation_length": len(result["conversation"]),
     }
+
 
 @app.post("/reset")
 async def reset_user(request: Request):

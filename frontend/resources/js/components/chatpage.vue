@@ -356,10 +356,19 @@ const sendMessage = async () => {
   isLoading.value = true;
 
   try {
+    const academicResp = await axios.get(`${DATA_URL}/students/${user.value.id}`);
+    const academic = academicResp.data.academic || {
+      taken_courses: [],
+      taken_geneds: [],
+      current_semester: 1
+    };
+    
     const { data } = await axios.post(`${AI_URL}/dialog`, {
       user_id: user.value.id,
       message: text,
+      academic  
     });
+
 
     if (Array.isArray(data.schedules)) {
       messages.value.push({
