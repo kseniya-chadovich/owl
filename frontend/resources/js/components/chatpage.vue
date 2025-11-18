@@ -343,15 +343,11 @@ const sendMessage = async () => {
 
   messages.value.push({ id: newId(), role: "user", text });
 
-  // If user types something instead of using Confirm/Add More buttons,
-// it means we should exit confirmation mode.
   if (confirmMessageId.value) {
     const idx = messages.value.findIndex(m => m.id === confirmMessageId.value);
     if (idx !== -1) messages.value.splice(idx, 1);
-    
     confirmMessageId.value = null;
   }
-
 
   isLoading.value = true;
 
@@ -368,7 +364,6 @@ const sendMessage = async () => {
       message: text,
       academic  
     });
-
 
     if (Array.isArray(data.schedules)) {
       messages.value.push({
@@ -401,7 +396,6 @@ const handleSelectSchedule = (index, message) => {
 
   const n = index + 1;
 
-  // If confirm box doesn't exist → create one
   if (!confirmMessageId.value) {
     const msgId = newId();
     confirmMessageId.value = msgId;
@@ -412,9 +406,7 @@ const handleSelectSchedule = (index, message) => {
       text: `You're looking at Schedule ${n}. Do you want to confirm it or add more requirements?`,
       confirmOptions: ["Confirm", "Add more requirements"],
     });
-  }
-  // If confirm exists → update it
-  else {
+  } else {
     const msg = messages.value.find((m) => m.id === confirmMessageId.value);
     if (msg) {
       msg.text = `You're looking at Schedule ${n}. Do you want to confirm it or add more requirements?`;
@@ -431,12 +423,14 @@ const handleConfirmOption = async (option) => {
 
   /* ---------- CONFIRM SCHEDULE ---------- */
   if (option === "Confirm") {
+
+    /* --- 1) Build detailed schedule text --- */
     const scheduleTextLines = selected.courses
       .map(
         (c) =>
-          `${c.course} | ${c.day_time || "TBD"} | ${c.credits}cr | ${
-            c.category
-          }`
+          `${c.course} | ${c.day_time || "TBD"} | ${c.credits}cr | ${c.category
+          }${c.gened_type ? " | GenEd: " + c.gened_type : ""
+          }${c.instructor ? " | Prof: " + c.instructor : ""}`
       )
       .join("\n");
 
@@ -446,21 +440,51 @@ const handleConfirmOption = async (option) => {
       text: `I confirm this schedule:\n${scheduleTextLines}`,
     });
 
-    // Save chosen schedule
+    /* --- 2) Save selected schedule to DB --- */
     await axios.post(`${DATA_URL}/students/schedules`, {
       user_id: user.value.id,
       schedule: selected,
     });
 
-    // Save final conversation
-    await saveConversation();
+    /* --- 3) UPDATE STUDENT ACADEMIC PROGRESS --- */
+    const academicResp = await axios.get(`${DATA_URL}/students/${user.value.id}`);
+    const academic = academicResp.data.academic;
 
-    // Reset AI STATE only
+    const newCourses = selected.courses.map(c => c.course);
+
+    const newGeneds = selected.courses
+      .map(c => c.gened_type)
+      .filter(g => g && g.length > 0);
+
+    const updatedCourses = Array.from(new Set([
+      ...academic.taken_courses,
+      ...newCourses
+    ]));
+
+    const updatedGeneds = Array.from(new Set([
+      ...academic.taken_geneds,
+      ...newGeneds
+    ]));
+
+    const updatedSemester = Math.min(8, Number(academic.current_semester) + 1);
+
+    // Call register-student again to update academic info
+    await axios.post(`${DATA_URL}/register-student`, {
+      personal: academicResp.data.personal,
+      academic: {
+        user_id: user.value.id,
+        current_semester: updatedSemester,
+        taken_courses: updatedCourses,
+        taken_geneds: updatedGeneds,
+      }
+    });
+
+    /* --- 4) Reset AI session --- */
     await axios.post(`${AI_URL}/reset`, {
       user_id: user.value.id,
     });
 
-    // Reset DB conversation
+    /* --- 5) Reset DB conversation --- */
     await axios.delete(
       `${DATA_URL}/students/conversation/${user.value.id}`
     );
@@ -480,12 +504,9 @@ const handleConfirmOption = async (option) => {
       countdown--;
 
       const msg = messages.value.find((m) => m.id === countdownMsgId);
-      if (msg) {
-        msg.text = `Your schedule has been saved! 🎉\nResetting in ${countdown}…`;
-      }
+      if (msg) msg.text = `Your schedule has been saved! 🎉\nResetting in ${countdown}…`;
     }
 
-    // Finished resetting
     messages.value = [
       {
         id: newId(),
