@@ -66,9 +66,16 @@
                 <!-- GENEDS -->
                 <label>Taken GenEd Types</label>
                 <div class="chip-container">
-                    <div v-for="gened in geneds" :key="gened"
-                        :class="['chip', { selected: selectedGeneds.includes(gened) }]"
-                        @click="toggleGened(gened)">
+                    <div
+                        v-for="gened in geneds"
+                        :key="gened"
+                        :class="[
+                            'chip',
+                            { selected: selectedGeneds.includes(gened) },
+                            (gened === 'GS' || (gened === 'GG' && international === 'yes')) ? 'disabled' : ''
+                        ]"
+                        @click="(gened !== 'GS' && !(gened === 'GG' && international === 'yes')) && toggleGened(gened)"
+                    >
                         {{ gened }}
                     </div>
                 </div>
@@ -122,7 +129,7 @@ const courses = ref([
   "CIS 3715", "CIS 4282", "CIS 4305", "CIS 4307", "CIS 4308",
   "CIS 4319", "CIS 4324", "CIS 4331", "CIS 4345", "CIS 4350",
   "CIS 4360", "CIS 4382", "CIS 4419", "CIS 4515", "CIS 4517",
-  "CIS 4523", "CIS 4524", "CIS 4615", "MATH 1041", "MATH 1042",
+  "CIS 4523", "CIS 4524", "CIS 4615", "MATH 1021","MATH 1041", "MATH 1042",
   "PHYS 1061", "PHYS 1062",
 ]);
 
@@ -174,6 +181,18 @@ const handleSubmit = async () => {
   }
 
   try {
+    // ★★★ AUTO-ADD REQUIRED GENEDS ★★★
+
+    // Always exempt GS (CS majors)
+    if (!selectedGeneds.value.includes("GS")) {
+      selectedGeneds.value.push("GS");
+    }
+
+    // International students must take GG
+    if (international.value === "yes" && !selectedGeneds.value.includes("GG")) {
+      selectedGeneds.value.push("GG");
+    }
+
     // 1) Sign up in Supabase Auth
     const fullName = `${firstName.value} ${lastName.value}`.trim();
 
@@ -197,14 +216,10 @@ const handleSubmit = async () => {
 
     console.log("signUp response:", data, error);
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     const userId = data?.user?.id;
-    if (!userId) {
-      throw new Error("Signup succeeded, but no user id returned.");
-    }
+    if (!userId) throw new Error("Signup succeeded, but no user id returned.");
 
     // 2) Prepare payload for data-service
     const nowYear = new Date().getFullYear();
@@ -222,7 +237,7 @@ const handleSubmit = async () => {
     const personal = {
       user_id: userId,
       full_name: fullName,
-      age: age ?? 0,                 // backend expects int (or Optional[int])
+      age: age ?? 0,
       is_international: international.value === "yes",
     };
 
@@ -237,9 +252,7 @@ const handleSubmit = async () => {
 
     const resp = await fetch(`${DATA_API_URL}/register-student`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ personal, academic }),
     });
 
@@ -247,17 +260,12 @@ const handleSubmit = async () => {
     console.log("Data API response:", resp.status, body);
 
     if (!resp.ok) {
-      throw new Error(
-        body?.detail || body?.message || "Failed to save student profile to data API."
-      );
+      throw new Error(body?.detail || body?.message || "Failed to save student profile to data API.");
     }
 
-    // All good
-    showMessage(
-      "Account created and profile saved! Check your email to verify.",
-      "success"
-    );
+    showMessage("Account created and profile saved! Check your email to verify.", "success");
     setTimeout(() => router.push("/confirmation"), 2500);
+
   } catch (err) {
     console.error("Signup error:", err);
     showMessage(err.message || "Signup failed. Please try again.", "error");
@@ -267,9 +275,8 @@ const handleSubmit = async () => {
 };
 </script>
 
-
-
 <style scoped>
+/* unchanged styles */
 .page-background {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(to bottom right, #a41e34, #ffffff);
@@ -375,6 +382,13 @@ select:focus {
     border-color: #a41e34;
 }
 
+/* NEW — disabled chip state */
+.chip.disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 .submit-btn {
     width: 100%;
     background-color: #a41e34;
@@ -424,16 +438,19 @@ select:focus {
     justify-content: space-between;
     min-width: 300px;
 }
+
 .message-box.success {
     background-color: #e6ffed;
     color: #38a169;
     border: 1px solid #9ae6b4;
 }
+
 .message-box.error {
     background-color: #fff5f5;
     color: #e53e3e;
     border: 1px solid #feb2b2;
 }
+
 .close-btn {
     background: none;
     border: none;
@@ -451,6 +468,4 @@ select:focus {
   display: block;
   margin-top: 10px;
 }
-
-
 </style>
