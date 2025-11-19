@@ -1,4 +1,52 @@
 <template>
+<!-- HAMBURGER TOGGLE -->
+<button
+  @click="sidebarOpen = true"
+  class="fixed top-4 left-4 z-50 bg-white border border-zinc-300 p-2 rounded-lg shadow hover:bg-zinc-100"
+>
+  <!-- Hamburger icon -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#800020]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+</button>
+
+<!-- DARK OVERLAY WHEN SIDEBAR IS OPEN -->
+<div
+  v-if="sidebarOpen"
+  @click="sidebarOpen = false"
+  class="fixed inset-0 bg-black bg-opacity-40 z-40"
+></div>
+
+<!-- SIDEBAR -->
+<div
+  class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300"
+  :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+>
+
+  <div class="p-6 border-b border-zinc-200">
+    <h2 class="text-xl font-bold text-[#800020]">Menu</h2>
+  </div>
+
+  <div class="p-4 flex flex-col gap-3">
+
+    <button
+      class="w-full bg-[#800020] text-white px-4 py-3 rounded-xl hover:bg-[#800020]/80 transition"
+      @click="$router.push('/account'); sidebarOpen = false;"
+    >
+      Account Information
+    </button>
+
+    <button
+      class="w-full bg-zinc-200 text-[#800020] px-4 py-3 rounded-xl hover:bg-zinc-300 transition"
+      @click="$router.push('/schedule'); sidebarOpen = false;"
+    >
+      Current Schedule
+    </button>
+
+  </div>
+</div>
+
   <div class="min-h-screen bg-white flex flex-col items-center py-16 px-4">
     <!-- TITLE -->
     <div class="text-center mb-12">
@@ -227,6 +275,8 @@ const user = ref(null);
 const messages = ref([]);
 const draftMessage = ref("");
 const isLoading = ref(false);
+const sidebarOpen = ref(false);
+
 
 // Show spinner while loading conversation from DB
 const isInitializing = ref(true);

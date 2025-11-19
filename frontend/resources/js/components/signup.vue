@@ -121,7 +121,7 @@ const otherGened = ref("");
 
 // chips
 const courses = ref([
-  "CIS 1001", "SCTC 2001", "CIS 1051", "CIS 1057", "CIS 1166",
+  "CIS 1001", "SCTC 2001", "CIS 1051", "CIS 1057", "CIS 1068", "CIS 1166",
   "CIS 2033", "CIS 2107", "CIS 2166", "CIS 2168", "CIS 3207",
   "CIS 3223", "CIS 3296", "CIS 4398", "CIS 4397", "CIS 3203",
   "CIS 3211", "CIS 3217", "CIS 3219", "CIS 3242", "CIS 3308",
