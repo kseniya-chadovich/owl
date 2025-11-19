@@ -102,10 +102,12 @@
               </div>
               <ul class="text-sm text-zinc-700 mb-2">
                 <li v-for="course in schedule.courses" :key="course.course">
-                  {{ course.course }} |
-                  {{ course.day_time || "TBD" }} |
-                  {{ course.credits }}cr |
-                  {{ course.category }}
+                {{ course.course }}
+                | {{ course.day_time || "TBD" }}
+                | {{ course.credits }}cr
+                | {{ course.category }}
+                <span v-if="course.gened_type"> | GenEd: {{ course.gened_type }}</span>
+                <span v-if="course.instructor"> | Prof: {{ course.instructor }}</span>
                 </li>
               </ul>
               <p class="text-sm text-zinc-600">
@@ -249,6 +251,11 @@ let messageCounter = 0;
 const newId = () => `msg-${messageCounter++}`;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Remove section numbers e.g. "CIS 1051 (801)" → "CIS 1051"
+const stripSection = (courseName) => {
+  return courseName.replace(/\s*\(\d+\)\s*$/, "").trim();
+};
+
 /* ----------------------------------------
    LOAD USER + CONVERSATION FROM DB
 ---------------------------------------- */
@@ -267,7 +274,6 @@ const loadUser = async () => {
 
   const stored = resp.data?.conversation || [];
 
-  // If no saved messages → new session
   if (!stored.length) {
     messages.value = [
       {
@@ -280,7 +286,6 @@ const loadUser = async () => {
     return;
   }
 
-  // Rehydrate chat messages including schedule blocks
   messages.value = stored.map((t) => {
     try {
       if (t.startsWith("{") && t.includes("schedules")) {
@@ -424,11 +429,11 @@ const handleConfirmOption = async (option) => {
   /* ---------- CONFIRM SCHEDULE ---------- */
   if (option === "Confirm") {
 
-    /* --- 1) Build detailed schedule text --- */
+    /* --- Build detailed schedule preview --- */
     const scheduleTextLines = selected.courses
       .map(
         (c) =>
-          `${c.course} | ${c.day_time || "TBD"} | ${c.credits}cr | ${c.category
+          `${stripSection(c.course)} | ${c.day_time || "TBD"} | ${c.credits}cr | ${c.category
           }${c.gened_type ? " | GenEd: " + c.gened_type : ""
           }${c.instructor ? " | Prof: " + c.instructor : ""}`
       )
@@ -440,17 +445,17 @@ const handleConfirmOption = async (option) => {
       text: `I confirm this schedule:\n${scheduleTextLines}`,
     });
 
-    /* --- 2) Save selected schedule to DB --- */
+    /* --- Save selected schedule --- */
     await axios.post(`${DATA_URL}/students/schedules`, {
       user_id: user.value.id,
       schedule: selected,
     });
 
-    /* --- 3) UPDATE STUDENT ACADEMIC PROGRESS --- */
+    /* --- UPDATE STUDENT ACADEMIC PROGRESS --- */
     const academicResp = await axios.get(`${DATA_URL}/students/${user.value.id}`);
     const academic = academicResp.data.academic;
 
-    const newCourses = selected.courses.map(c => c.course);
+    const newCourses = selected.courses.map(c => stripSection(c.course));
 
     const newGeneds = selected.courses
       .map(c => c.gened_type)
@@ -468,7 +473,6 @@ const handleConfirmOption = async (option) => {
 
     const updatedSemester = Math.min(8, Number(academic.current_semester) + 1);
 
-    // Call register-student again to update academic info
     await axios.post(`${DATA_URL}/register-student`, {
       personal: academicResp.data.personal,
       academic: {
@@ -479,15 +483,13 @@ const handleConfirmOption = async (option) => {
       }
     });
 
-    /* --- 4) Reset AI session --- */
+    /* --- Reset AI session --- */
     await axios.post(`${AI_URL}/reset`, {
       user_id: user.value.id,
     });
 
-    /* --- 5) Reset DB conversation --- */
-    await axios.delete(
-      `${DATA_URL}/students/conversation/${user.value.id}`
-    );
+    /* --- Reset DB conversation --- */
+    await axios.delete(`${DATA_URL}/students/conversation/${user.value.id}`);
 
     /* ---------- COUNTDOWN UI ---------- */
     let countdown = 5;
