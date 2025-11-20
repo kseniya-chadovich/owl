@@ -1,71 +1,103 @@
 <template>
-  <div class="page-background">
-    <div class="container">
-      <h1>Email Confirmation Sent!</h1>
-      <p>
-        A confirmation email has been sent to your inbox.
-        <br />
-        Please check your email and click the link to verify your account.
-      </p>
+    <div
+        class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white flex flex-col"
+    >
+        <!-- NAVBAR -->
+        <header
+            class="w-full border-b border-white/10 bg-black/10 backdrop-blur-sm"
+        >
+            <div
+                class="flex justify-between items-center max-w-6xl mx-auto px-6 py-4"
+            >
+                <h1 class="text-xl font-semibold tracking-tight">
+                    AI Scheduler
+                </h1>
+
+                <div class="flex items-center space-x-3">
+                    <button
+                        @click="$router.push('/')"
+                        class="hidden sm:inline-flex border border-white/70 text-white font-medium px-3 py-1.5 rounded-lg text-sm hover:bg-white/10 transition"
+                    >
+                        ← Home
+                    </button>
+                    <button
+                        @click="$router.push('/signup')"
+                        class="border border-white bg-white text-[#800020] font-medium px-4 py-1.5 rounded-lg text-sm hover:bg-transparent hover:text-white transition"
+                    >
+                        Signup
+                    </button>
+                    <button
+                        @click="$router.push('/login')"
+                        class="border border-white/80 bg-transparent text-white font-medium px-4 py-1.5 rounded-lg text-sm hover:bg-white hover:text-[#800020] transition"
+                    >
+                        Login
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN -->
+        <main class="flex-1 flex items-center justify-center px-4 py-10">
+            <div class="relative w-full max-w-xl">
+                <!-- Glow effect -->
+                <div
+                    class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-white/40 via-white/5 to-transparent blur-2xl opacity-70"
+                ></div>
+
+                <!-- CARD -->
+                <div
+                    class="relative z-10 bg-white/95 text-black backdrop-blur-xl rounded-2xl border border-white/40 px-8 py-10 shadow-xl text-center animate-fade-up"
+                >
+                    <div
+                        class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#800020]/10 text-[#800020] text-2xl"
+                    >
+                        ✉️
+                    </div>
+
+                    <h1 class="text-2xl font-bold mb-2">
+                        Email Confirmation Sent!
+                    </h1>
+                    <p
+                        class="text-sm md:text-base text-neutral-700 mb-6 leading-relaxed"
+                    >
+                        We’ve sent a confirmation email to your inbox.
+                        <br class="hidden md:block" />
+                        Please check your email and click the link to verify
+                        your account.
+                    </p>
+
+                    <button
+                        @click="$router.push('/login')"
+                        class="inline-flex items-center justify-center bg-[#880808] text-white font-semibold text-sm md:text-base px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition"
+                    >
+                        Go to Login
+                    </button>
+
+                    <p class="text-xs text-neutral-600 mt-4">
+                        Didn’t get the email? Check your spam folder or try
+                        again from the login page.
+                    </p>
+                </div>
+            </div>
+        </main>
     </div>
-  </div>
 </template>
 
-
 <style scoped>
-.page-background {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to bottom right, #a41e34, #ffffff);
-  color: #333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
-  margin: 0;
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
+/* simple appear animation */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+        filter: blur(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
 }
-
-.container {
-    background-color: #fff;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-    padding: 50px 60px;
-    width: 90%;
-    max-width: 750px; 
-    text-align: center;
-    box-sizing: border-box;
-}
-
-
-
-h1 {
-    font-size: 28px;
-    color: #a41e34;
-    margin-bottom: 20px;
-}
-
-p {
-    font-size: 18px;
-    color: #333;
-    line-height: 1.6;
-}
-
-
-.login-btn {
-  width: 100%;
-  background-color: #a41e34;
-  color: #fff;
-  padding: 12px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease-in-out;
-}
-
-.login-btn:hover {
-  background-color: #8e162b;
+.animate-fade-up {
+    animation: fadeUp 0.6s ease-out forwards;
 }
 </style>

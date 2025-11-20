@@ -1,110 +1,418 @@
 <template>
-    <div class="page-background">
-        <!-- Message Box -->
-        <div v-if="message.visible" :class="['message-box', message.type]">
-            {{ message.text }}
-            <button @click="message.visible = false" class="close-btn">&times;</button>
-        </div>
+    <div
+        class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white flex flex-col"
+    >
+        <!-- NAVBAR -->
+        <header
+            class="w-full border-b border-white/10 bg-black/10 backdrop-blur-sm"
+        >
+            <div
+                class="flex justify-between items-center max-w-6xl mx-auto px-6 py-4"
+            >
+                <h1 class="text-xl font-semibold tracking-tight">
+                    AI Scheduler
+                </h1>
 
-        <div class="container">
-            <h1>Student Signup / Profile Info</h1>
-
-            <form @submit.prevent="handleSubmit">
-                
-                <!-- FIRST + LAST NAME -->
-                <label for="firstName">First Name</label>
-                <input type="text" id="firstName" v-model="firstName" required />
-
-                <label for="lastName">Last Name</label>
-                <input type="text" id="lastName" v-model="lastName" required />
-
-                <!-- EMAIL + PASSWORD -->
-                <label for="email">Email</label>
-                <input type="email" id="email" v-model="email" required />
-
-                <label for="password">Password</label>
-                <input type="password" id="password" v-model="password" required />
-
-                <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" v-model="confirmPassword" required />
-
-                <!-- PROFILE FIELDS -->
-                <label for="birthday">Date of Birth</label>
-                <input type="date" id="birthday" v-model="birthday" />
-
-                <label>International Student</label>
-                <div class="radio-group">
-                    <label><input type="radio" value="yes" v-model="international" /> Yes</label>
-                    <label><input type="radio" value="no" v-model="international" /> No</label>
-                </div>
-
-                <label for="semester">Current Semester</label>
-                <select id="semester" v-model="semester">
-                    <option disabled value="">Select semester</option>
-                    <option v-for="n in 8" :key="n" :value="n">{{ n }}</option>
-                </select>
-
-                <label>Enrollment Type</label>
-                <div class="radio-group">
-                    <label><input type="radio" value="full-time" v-model="enrollment" /> Full-time</label>
-                    <label><input type="radio" value="part-time" v-model="enrollment" /> Part-time</label>
-                </div>
-
-                <!-- COURSES -->
-                <label>Taken Courses</label>
-                <div class="chip-container">
-                    <div v-for="course in courses" :key="course"
-                        :class="['chip', { selected: selectedCourses.includes(course) }]"
-                        @click="toggleCourse(course)">
-                        {{ course }}
-                    </div>
-                </div>
-
-                <label for="otherCourse">Other Course(s)</label>
-                <input type="text" id="otherCourse" v-model="otherCourse" placeholder="Enter other course" />
-
-                <!-- GENEDS -->
-                <label>Taken GenEd Types</label>
-                <div class="chip-container">
-                    <div
-                        v-for="gened in geneds"
-                        :key="gened"
-                        :class="[
-                            'chip',
-                            { selected: selectedGeneds.includes(gened) },
-                            (gened === 'GS' || (gened === 'GG' && international === 'yes')) ? 'disabled' : ''
-                        ]"
-                        @click="(gened !== 'GS' && !(gened === 'GG' && international === 'yes')) && toggleGened(gened)"
+                <div class="flex items-center space-x-3">
+                    <button
+                        @click="$router.push('/')"
+                        class="hidden sm:inline-flex border border-white/70 text-white font-medium px-3 py-1.5 rounded-lg text-sm hover:bg-white/10 transition"
                     >
-                        {{ gened }}
-                    </div>
+                        ← Home
+                    </button>
+
+                    <button
+                        @click="$router.push('/login')"
+                        class="border border-white/80 bg-transparent text-white font-medium px-4 py-1.5 rounded-lg text-sm hover:bg-white hover:text-[#800020] transition"
+                    >
+                        Login
+                    </button>
                 </div>
+            </div>
+        </header>
 
-                <label for="otherGened">Other GenEd Type(s)</label>
-                <input type="text" id="otherGened" v-model="otherGened" placeholder="Enter other GenEd" />
+        <!-- MAIN -->
+        <main class="flex-1 flex items-start justify-center px-4 py-10">
+            <div class="relative w-full max-w-4xl">
+                <!-- Glow effect -->
+                <div
+                    class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-white/40 via-white/5 to-transparent blur-2xl opacity-70"
+                ></div>
 
-                <button type="submit" class="submit-btn">
-                    {{ isLoading ? "Submitting..." : "Submit" }}
-                </button>
+                <!-- MESSAGE BOX -->
+                <transition name="fade-msg">
+                    <div
+                        v-if="message.visible"
+                        :class="[
+                            'mb-4 flex items-center justify-between text-sm px-4 py-3 rounded-lg border shadow-md relative z-20 bg-white',
+                            message.type === 'success'
+                                ? 'border-emerald-500 text-emerald-700'
+                                : 'border-red-500 text-red-700',
+                        ]"
+                    >
+                        <span>{{ message.text }}</span>
+                        <button
+                            @click="message.visible = false"
+                            class="ml-4 text-lg leading-none hover:scale-110 transition-transform"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                </transition>
 
-                <p class="small-text">
-                    Already have an account?
-                    <a @click="$router.push('/login')">Log in</a>
-                </p>
-            </form>
-        </div>
+                <!-- SIGNUP CARD -->
+                <div
+                    :class="[
+                        'relative z-10 bg-white/95 text-black backdrop-blur-xl rounded-2xl border border-white/40 px-8 py-10 shadow-xl',
+                        'transform-gpu transition-all duration-700',
+                        showCard ? 'card-in' : 'card-init',
+                    ]"
+                >
+                    <h1 class="text-2xl font-bold mb-2 text-center">
+                        Student Signup / Profile Info
+                    </h1>
+                    <p class="text-sm text-neutral-700 mb-6 text-center">
+                        Create your account and tell us a bit about your
+                        academic background.
+                    </p>
+
+                    <form @submit.prevent="handleSubmit" class="space-y-6">
+                        <!-- BASIC INFO -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    for="firstName"
+                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    First Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id="firstName"
+                                    v-model="firstName"
+                                    required
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                />
+                            </div>
+
+                            <div>
+                                <label
+                                    for="lastName"
+                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    Last Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id="lastName"
+                                    v-model="lastName"
+                                    required
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- EMAIL + PASSWORD -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    for="email"
+                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    v-model="email"
+                                    required
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                />
+                            </div>
+
+                            <div>
+                                <label
+                                    for="birthday"
+                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    Date of Birth
+                                </label>
+                                <input
+                                    type="date"
+                                    id="birthday"
+                                    v-model="birthday"
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    for="password"
+                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    v-model="password"
+                                    required
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                />
+                            </div>
+
+                            <div>
+                                <label
+                                    for="confirmPassword"
+                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    Confirm Password
+                                </label>
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    v-model="confirmPassword"
+                                    required
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- INTERNATIONAL + ENROLLMENT + SEMESTER -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <p
+                                    class="text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    International Student
+                                </p>
+                                <div
+                                    class="flex items-center gap-4 text-sm text-neutral-800"
+                                >
+                                    <label
+                                        class="inline-flex items-center gap-1"
+                                    >
+                                        <input
+                                            type="radio"
+                                            value="yes"
+                                            v-model="international"
+                                            class="h-4 w-4"
+                                        />
+                                        <span>Yes</span>
+                                    </label>
+                                    <label
+                                        class="inline-flex items-center gap-1"
+                                    >
+                                        <input
+                                            type="radio"
+                                            value="no"
+                                            v-model="international"
+                                            class="h-4 w-4"
+                                        />
+                                        <span>No</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label
+                                    for="semester"
+                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    Current Semester
+                                </label>
+                                <select
+                                    id="semester"
+                                    v-model="semester"
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                >
+                                    <option disabled value="">
+                                        Select semester
+                                    </option>
+                                    <option v-for="n in 8" :key="n" :value="n">
+                                        {{ n }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <p
+                                    class="text-sm font-semibold text-neutral-800 mb-1"
+                                >
+                                    Enrollment Type
+                                </p>
+                                <div
+                                    class="flex items-center gap-4 text-sm text-neutral-800"
+                                >
+                                    <label
+                                        class="inline-flex items-center gap-1"
+                                    >
+                                        <input
+                                            type="radio"
+                                            value="full-time"
+                                            v-model="enrollment"
+                                            class="h-4 w-4"
+                                        />
+                                        <span>Full-time</span>
+                                    </label>
+                                    <label
+                                        class="inline-flex items-center gap-1"
+                                    >
+                                        <input
+                                            type="radio"
+                                            value="part-time"
+                                            v-model="enrollment"
+                                            class="h-4 w-4"
+                                        />
+                                        <span>Part-time</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- COURSES -->
+                        <div>
+                            <label
+                                class="block text-sm font-semibold text-neutral-800 mb-1"
+                            >
+                                Taken Courses
+                            </label>
+                            <p class="text-xs text-neutral-500 mb-2">
+                                Tap to select all CIS / Math / Physics courses
+                                you have already taken.
+                            </p>
+                            <div class="chip-container">
+                                <div
+                                    v-for="course in courses"
+                                    :key="course"
+                                    :class="[
+                                        'chip',
+                                        {
+                                            selected:
+                                                selectedCourses.includes(
+                                                    course
+                                                ),
+                                        },
+                                    ]"
+                                    @click="toggleCourse(course)"
+                                >
+                                    {{ course }}
+                                </div>
+                            </div>
+
+                            <label
+                                for="otherCourse"
+                                class="block text-sm font-semibold text-neutral-800 mb-1 mt-3"
+                            >
+                                Other Course(s)
+                            </label>
+                            <input
+                                type="text"
+                                id="otherCourse"
+                                v-model="otherCourse"
+                                placeholder="Enter any additional courses (comma separated)"
+                                class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                            />
+                        </div>
+
+                        <!-- GENEDS -->
+                        <div>
+                            <label
+                                class="block text-sm font-semibold text-neutral-800 mb-1"
+                            >
+                                Taken GenEd Types
+                            </label>
+                            <p class="text-xs text-neutral-500 mb-2">
+                                GS will be auto-added for CS majors. GG is
+                                required for international students.
+                            </p>
+                            <div class="chip-container">
+                                <div
+                                    v-for="gened in geneds"
+                                    :key="gened"
+                                    :class="[
+                                        'chip',
+                                        {
+                                            selected:
+                                                selectedGeneds.includes(gened),
+                                        },
+                                        gened === 'GS' ||
+                                        (gened === 'GG' &&
+                                            international === 'yes')
+                                            ? 'disabled'
+                                            : '',
+                                    ]"
+                                    @click="
+                                        gened !== 'GS' &&
+                                            !(
+                                                gened === 'GG' &&
+                                                international === 'yes'
+                                            ) &&
+                                            toggleGened(gened)
+                                    "
+                                >
+                                    {{ gened }}
+                                </div>
+                            </div>
+
+                            <label
+                                for="otherGened"
+                                class="block text-sm font-semibold text-neutral-800 mb-1 mt-3"
+                            >
+                                Other GenEd Type(s)
+                            </label>
+                            <input
+                                type="text"
+                                id="otherGened"
+                                v-model="otherGened"
+                                placeholder="Enter other GenEd types (comma separated)"
+                                class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                            />
+                        </div>
+
+                        <!-- SUBMIT -->
+                        <div>
+                            <button
+                                type="submit"
+                                class="w-full bg-[#880808] text-white font-semibold text-base py-2.5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-60"
+                                :disabled="isLoading"
+                            >
+                                {{ isLoading ? "Submitting..." : "Submit" }}
+                            </button>
+
+                            <p
+                                class="text-sm text-center text-neutral-800 mt-3"
+                            >
+                                Already have an account?
+                                <button
+                                    type="button"
+                                    @click="$router.push('/login')"
+                                    class="font-medium text-[#800020] hover:text-[#550014] underline transition"
+                                >
+                                    Log in
+                                </button>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
     </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { supabase } from "../supabase";
 
 const router = useRouter();
 const isLoading = ref(false);
+const showCard = ref(false);
 
-const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "https://supabase-kqbi.onrender.com";
+const DATA_API_URL =
+    import.meta.env.VITE_DATA_API_URL || "https://supabase-kqbi.onrender.com";
 
 // form fields
 const firstName = ref("");
@@ -121,351 +429,279 @@ const otherGened = ref("");
 
 // chips
 const courses = ref([
-  "CIS 1001", "SCTC 2001", "CIS 1051", "CIS 1057", "CIS 1068", "CIS 1166",
-  "CIS 2033", "CIS 2107", "CIS 2166", "CIS 2168", "CIS 3207",
-  "CIS 3223", "CIS 3296", "CIS 4398", "CIS 4397", "CIS 3203",
-  "CIS 3211", "CIS 3217", "CIS 3219", "CIS 3242", "CIS 3308",
-  "CIS 3319", "CIS 3381", "CIS 3441", "CIS 3515", "CIS 3605",
-  "CIS 3715", "CIS 4282", "CIS 4305", "CIS 4307", "CIS 4308",
-  "CIS 4319", "CIS 4324", "CIS 4331", "CIS 4345", "CIS 4350",
-  "CIS 4360", "CIS 4382", "CIS 4419", "CIS 4515", "CIS 4517",
-  "CIS 4523", "CIS 4524", "CIS 4615", "MATH 1021","MATH 1041", "MATH 1042",
-  "PHYS 1061", "PHYS 1062",
+    "CIS 1001",
+    "SCTC 2001",
+    "CIS 1051",
+    "CIS 1057",
+    "CIS 1068",
+    "CIS 1166",
+    "CIS 2033",
+    "CIS 2107",
+    "CIS 2166",
+    "CIS 2168",
+    "CIS 3207",
+    "CIS 3223",
+    "CIS 3296",
+    "CIS 4398",
+    "CIS 4397",
+    "CIS 3203",
+    "CIS 3211",
+    "CIS 3217",
+    "CIS 3219",
+    "CIS 3242",
+    "CIS 3308",
+    "CIS 3319",
+    "CIS 3381",
+    "CIS 3441",
+    "CIS 3515",
+    "CIS 3605",
+    "CIS 3715",
+    "CIS 4282",
+    "CIS 4305",
+    "CIS 4307",
+    "CIS 4308",
+    "CIS 4319",
+    "CIS 4324",
+    "CIS 4331",
+    "CIS 4345",
+    "CIS 4350",
+    "CIS 4360",
+    "CIS 4382",
+    "CIS 4419",
+    "CIS 4515",
+    "CIS 4517",
+    "CIS 4523",
+    "CIS 4524",
+    "CIS 4615",
+    "MATH 1021",
+    "MATH 1041",
+    "MATH 1042",
+    "PHYS 1061",
+    "PHYS 1062",
 ]);
 
-const geneds = ref(["GA","GB","GD","GG","GS","GU","GW","GQ","GY","GZ"]);
+const geneds = ref([
+    "GA",
+    "GB",
+    "GD",
+    "GG",
+    "GS",
+    "GU",
+    "GW",
+    "GQ",
+    "GY",
+    "GZ",
+]);
 
 const selectedCourses = ref([]);
 const selectedGeneds = ref([]);
 
 // message state
 const message = ref({
-  text: "",
-  type: "",
-  visible: false,
+    text: "",
+    type: "",
+    visible: false,
 });
 
 const showMessage = (text, type) => {
-  message.value.text = text;
-  message.value.type = type;
-  message.value.visible = true;
+    message.value.text = text;
+    message.value.type = type;
+    message.value.visible = true;
 };
 
 const toggleCourse = (course) => {
-  const i = selectedCourses.value.indexOf(course);
-  if (i === -1) selectedCourses.value.push(course);
-  else selectedCourses.value.splice(i, 1);
+    const i = selectedCourses.value.indexOf(course);
+    if (i === -1) selectedCourses.value.push(course);
+    else selectedCourses.value.splice(i, 1);
 };
 
 const toggleGened = (gened) => {
-  const i = selectedGeneds.value.indexOf(gened);
-  if (i === -1) selectedGeneds.value.push(gened);
-  else selectedGeneds.value.splice(i, 1);
+    const i = selectedGeneds.value.indexOf(gened);
+    if (i === -1) selectedGeneds.value.push(gened);
+    else selectedGeneds.value.splice(i, 1);
 };
 
 const parseCommaList = (raw) => {
-  if (!raw) return [];
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+    if (!raw) return [];
+    return raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
 };
 
 const handleSubmit = async () => {
-  isLoading.value = true;
+    isLoading.value = true;
 
-  if (password.value !== confirmPassword.value) {
-    showMessage("Passwords do not match. Please re-enter.", "error");
-    isLoading.value = false;
-    return;
-  }
-
-  try {
-    // ★★★ AUTO-ADD REQUIRED GENEDS ★★★
-
-    // Always exempt GS (CS majors)
-    if (!selectedGeneds.value.includes("GS")) {
-      selectedGeneds.value.push("GS");
+    if (password.value !== confirmPassword.value) {
+        showMessage("Passwords do not match. Please re-enter.", "error");
+        isLoading.value = false;
+        return;
     }
 
-    // International students must take GG
-    if (international.value === "yes" && !selectedGeneds.value.includes("GG")) {
-      selectedGeneds.value.push("GG");
+    try {
+        // AUTO-ADD REQUIRED GENEDS
+        if (!selectedGeneds.value.includes("GS")) {
+            selectedGeneds.value.push("GS");
+        }
+
+        if (
+            international.value === "yes" &&
+            !selectedGeneds.value.includes("GG")
+        ) {
+            selectedGeneds.value.push("GG");
+        }
+
+        const fullName = `${firstName.value} ${lastName.value}`.trim();
+
+        const { data, error } = await supabase.auth.signUp({
+            email: email.value,
+            password: password.value,
+            options: {
+                data: {
+                    display_name: fullName,
+                    first_name: firstName.value,
+                    last_name: lastName.value,
+                    date_of_birth: birthday.value || null,
+                    international: international.value === "yes",
+                    semester: semester.value ? Number(semester.value) : null,
+                    enrollment: enrollment.value || null,
+                    taken_courses: selectedCourses.value,
+                    geneds: selectedGeneds.value,
+                },
+            },
+        });
+
+        console.log("signUp response:", data, error);
+
+        if (error) throw error;
+
+        const userId = data?.user?.id;
+        if (!userId)
+            throw new Error("Signup succeeded, but no user id returned.");
+
+        const nowYear = new Date().getFullYear();
+        let age = null;
+        if (birthday.value) {
+            const birthYear = new Date(birthday.value).getFullYear();
+            if (!isNaN(birthYear)) {
+                age = nowYear - birthYear;
+            }
+        }
+
+        const extraCourses = parseCommaList(otherCourse.value);
+        const extraGeneds = parseCommaList(otherGened.value);
+
+        const personal = {
+            user_id: userId,
+            full_name: fullName,
+            age: age ?? 0,
+            is_international: international.value === "yes",
+        };
+
+        const academic = {
+            user_id: userId,
+            current_semester: semester.value ? Number(semester.value) : 0,
+            taken_courses: [...selectedCourses.value, ...extraCourses],
+            taken_geneds: [...selectedGeneds.value, ...extraGeneds],
+        };
+
+        console.log("Sending to data API:", { personal, academic });
+
+        const resp = await fetch(`${DATA_API_URL}/register-student`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ personal, academic }),
+        });
+
+        const body = await resp.json().catch(() => ({}));
+        console.log("Data API response:", resp.status, body);
+
+        if (!resp.ok) {
+            throw new Error(
+                body?.detail ||
+                    body?.message ||
+                    "Failed to save student profile to data API."
+            );
+        }
+
+        showMessage(
+            "Account created and profile saved! Check your email to verify.",
+            "success"
+        );
+        setTimeout(() => router.push("/confirmation"), 2500);
+    } catch (err) {
+        console.error("Signup error:", err);
+        showMessage(err.message || "Signup failed. Please try again.", "error");
+    } finally {
+        isLoading.value = false;
     }
-
-    // 1) Sign up in Supabase Auth
-    const fullName = `${firstName.value} ${lastName.value}`.trim();
-
-    const { data, error } = await supabase.auth.signUp({
-      email: email.value,
-      password: password.value,
-      options: {
-        data: {
-          display_name: fullName,
-          first_name: firstName.value,
-          last_name: lastName.value,
-          date_of_birth: birthday.value || null,
-          international: international.value === "yes",
-          semester: semester.value ? Number(semester.value) : null,
-          enrollment: enrollment.value || null,
-          taken_courses: selectedCourses.value,
-          geneds: selectedGeneds.value,
-        },
-      },
-    });
-
-    console.log("signUp response:", data, error);
-
-    if (error) throw error;
-
-    const userId = data?.user?.id;
-    if (!userId) throw new Error("Signup succeeded, but no user id returned.");
-
-    // 2) Prepare payload for data-service
-    const nowYear = new Date().getFullYear();
-    let age = null;
-    if (birthday.value) {
-      const birthYear = new Date(birthday.value).getFullYear();
-      if (!isNaN(birthYear)) {
-        age = nowYear - birthYear;
-      }
-    }
-
-    const extraCourses = parseCommaList(otherCourse.value);
-    const extraGeneds = parseCommaList(otherGened.value);
-
-    const personal = {
-      user_id: userId,
-      full_name: fullName,
-      age: age ?? 0,
-      is_international: international.value === "yes",
-    };
-
-    const academic = {
-      user_id: userId,
-      current_semester: semester.value ? Number(semester.value) : 0,
-      taken_courses: [...selectedCourses.value, ...extraCourses],
-      taken_geneds: [...selectedGeneds.value, ...extraGeneds],
-    };
-
-    console.log("Sending to data API:", { personal, academic });
-
-    const resp = await fetch(`${DATA_API_URL}/register-student`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ personal, academic }),
-    });
-
-    const body = await resp.json().catch(() => ({}));
-    console.log("Data API response:", resp.status, body);
-
-    if (!resp.ok) {
-      throw new Error(body?.detail || body?.message || "Failed to save student profile to data API.");
-    }
-
-    showMessage("Account created and profile saved! Check your email to verify.", "success");
-    setTimeout(() => router.push("/confirmation"), 2500);
-
-  } catch (err) {
-    console.error("Signup error:", err);
-    showMessage(err.message || "Signup failed. Please try again.", "error");
-  } finally {
-    isLoading.value = false;
-  }
 };
+
+onMounted(() => {
+    requestAnimationFrame(() => {
+        showCard.value = true;
+    });
+});
 </script>
 
 <style scoped>
-/* unchanged styles */
-.page-background {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to bottom right, #a41e34, #ffffff);
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 40px 0;
-    margin: 0;
-    min-height: 100vh;
-    width: 100%;
-    position: relative;
+/* Card entrance animation */
+.card-init {
+    opacity: 0;
+    transform: translateY(30px) scale(0.96);
+    filter: blur(6px);
+}
+.card-in {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    transition: all 700ms ease;
+}
+/* Message fade */
+.fade-msg-enter-active,
+.fade-msg-leave-active {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.fade-msg-enter-from,
+.fade-msg-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 
-.container {
-    background-color: #fff;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-    padding: 40px 50px;
-    width: 100%;
-    max-width: 550px;
-    text-align: left;
-    box-sizing: border-box;
-}
-
-h1 {
-    text-align: center;
-    color: #a41e34;
-    margin-bottom: 25px;
-    font-size: 28px;
-}
-
-label {
-    display: block;
-    margin-top: 14px;
-    font-weight: 600;
-}
-
-input,
-select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 4px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border 0.2s ease-in-out;
-    box-sizing: border-box;
-}
-
-input:focus,
-select:focus {
-    outline: none;
-    border-color: #a41e34;
-}
-
-.radio-group {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin: 8px 0 10px 0;
-}
-
-.radio-group label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 0;
-    font-weight: normal;
-}
-
-.radio-group input[type="radio"] {
-    width: auto;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-}
-
+/* Chips styling (courses & geneds) */
 .chip-container {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin: 10px 0 20px 0;
+    margin: 8px 0 4px 0;
 }
 
 .chip {
-    background: #f4f4f4;
-    border: 1px solid #ccc;
-    border-radius: 20px;
+    background: #f4f4f5;
+    border: 1px solid #d4d4d8;
+    border-radius: 999px;
     padding: 6px 12px;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    font-size: 14px;
+    transition: all 0.15s ease-in-out;
+    font-size: 0.8rem;
+    color: #27272a;
 }
 
 .chip:hover {
-    background-color: #ffe6e9;
+    background-color: #ffe6eb;
+    border-color: #e11d48;
 }
 
 .chip.selected {
-    background-color: #a41e34;
+    background-color: #800020;
     color: #fff;
-    border-color: #a41e34;
+    border-color: #800020;
 }
 
-/* NEW — disabled chip state */
+/* disabled chip (e.g. auto-added GS / GG) */
 .chip.disabled {
     opacity: 0.45;
-    pointer-events: none;
     cursor: not-allowed;
-}
-
-.submit-btn {
-    width: 100%;
-    background-color: #a41e34;
-    color: #fff;
-    padding: 12px;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background 0.2s ease-in-out;
-}
-
-.submit-btn:hover {
-    background-color: #8e162b;
-}
-
-.small-text {
-    font-size: 13px;
-    margin-top: 20px;
-    text-align: center;
-}
-
-.small-text a {
-    color: #a41e34;
-    text-decoration: none;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.small-text a:hover {
-    text-decoration: underline;
-}
-
-.message-box {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 30px;
-    border-radius: 8px;
-    font-weight: 600;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-width: 300px;
-}
-
-.message-box.success {
-    background-color: #e6ffed;
-    color: #38a169;
-    border: 1px solid #9ae6b4;
-}
-
-.message-box.error {
-    background-color: #fff5f5;
-    color: #e53e3e;
-    border: 1px solid #feb2b2;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    color: inherit;
-    font-size: 18px;
-    margin-left: 15px;
-    cursor: pointer;
-    line-height: 1;
-}
-
-.other-input label {
-  font-size: 15px;        
-  font-weight: 450;       
-  color: #313030;          
-  display: block;
-  margin-top: 10px;
+    pointer-events: none;
 }
 </style>
