@@ -3,3 +3,4 @@ ortools
 python-dotenv
 fastapi
 uvicorn
+pytest
