@@ -6,6 +6,7 @@ import Signup from "./components/signup.vue";
 import Chat from "./components/chatpage.vue";
 import Confirmation from "./components/confirmation.vue";
 import Schedule from "./components/schedule.vue";
+import Account from "./components/account.vue";
 const routes = [
     {
         path: "/",
@@ -31,16 +32,21 @@ const routes = [
         component: Chat,
     },
 
-    { 
+    {
         path: "/confirmation",
-        name: "Confirmation", 
-        component: Confirmation
-     },
-     {
+        name: "Confirmation",
+        component: Confirmation,
+    },
+    {
         path: "/schedule",
         name: "CurrentSchedule",
-        component: Schedule
-    }
+        component: Schedule,
+    },
+    {
+        path: "/account",
+        name: "account",
+        component: Account,
+    },
 ];
 
 const router = createRouter({
