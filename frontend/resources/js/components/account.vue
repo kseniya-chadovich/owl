@@ -2,7 +2,6 @@
     <div
         class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white flex flex-col"
     >
-        <!-- NAVBAR -->
         <header
             class="w-full border-b border-white/10 bg-black/10 backdrop-blur-sm"
         >
@@ -30,15 +29,12 @@
             </div>
         </header>
 
-        <!-- MAIN -->
         <main class="flex-1 flex items-start justify-center px-4 py-10">
             <div class="relative w-full max-w-4xl">
-                <!-- Glow effect -->
                 <div
                     class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-white/40 via-white/5 to-transparent blur-2xl opacity-70"
                 ></div>
 
-                <!-- MESSAGE BOX -->
                 <transition name="fade-msg">
                     <div
                         v-if="message.visible"
@@ -59,7 +55,6 @@
                     </div>
                 </transition>
 
-                <!-- ACCOUNT CARD -->
                 <div
                     :class="[
                         'relative z-10 bg-white/95 text-black backdrop-blur-xl rounded-2xl border border-white/40 px-8 py-10 shadow-xl',
@@ -74,7 +69,6 @@
                         Your personal and academic information.
                     </p>
 
-                    <!-- LOADING STATE -->
                     <div v-if="isLoading" class="text-center py-8">
                         <div
                             class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#800020]"
@@ -84,7 +78,6 @@
                         </p>
                     </div>
 
-                    <!-- ERROR STATE -->
                     <div v-else-if="error" class="text-center py-8">
                         <p class="text-red-600 mb-4">{{ error }}</p>
                         <button
@@ -95,70 +88,158 @@
                         </button>
                     </div>
 
-                    <!-- ACCOUNT DETAILS -->
                     <div v-else-if="studentData" class="space-y-6">
-                        <!-- PERSONAL INFORMATION -->
+                        <div class="flex justify-end mb-4">
+                            <button
+                                v-if="!isEditing"
+                                @click="enableEditing"
+                                class="px-4 py-2 bg-[#880808] text-white rounded-lg hover:bg-[#700618]"
+                            >
+                                Edit
+                            </button>
+
+                            <div v-else class="flex gap-3">
+                                <button
+                                    @click="saveChanges"
+                                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    @click="cancelEditing"
+                                    class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center mb-6">
+                            <div class="relative">
+                                <img
+                                    :src="
+                                        previewImage ||
+                                        studentData.personal?.profile_picture ||
+                                        defaultProfile
+                                    "
+                                    class="w-28 h-28 rounded-full object-cover border-2 border-[#800020]"
+                                />
+
+                                <input
+                                    ref="fileInput"
+                                    type="file"
+                                    accept="image/*"
+                                    class="hidden"
+                                    @change="handleImageUpload"
+                                />
+                            </div>
+
+                            <button
+                                v-if="isEditing"
+                                @click="$refs.fileInput.click()"
+                                class="mt-3 px-3 py-1.5 bg-[#800020] text-white text-sm rounded-lg hover:bg-[#6a001a] transition"
+                            >
+                                Change Photo
+                            </button>
+                        </div>
+
                         <div class="bg-neutral-50 rounded-xl p-6">
                             <h2
                                 class="text-lg font-semibold mb-4 text-[#800020] border-b pb-2"
                             >
                                 Personal Information
                             </h2>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                                 <div>
                                     <label
                                         class="block text-sm font-medium text-neutral-600 mb-1"
                                     >
                                         Full Name
                                     </label>
-                                    <p class="text-black font-semibold">
+
+                                    <p
+                                        v-if="!isEditing"
+                                        class="text-black font-semibold"
+                                    >
                                         {{
                                             studentData.personal?.full_name ||
-                                            studentData.full_name ||
                                             "Not provided"
                                         }}
                                     </p>
+
+                                    <input
+                                        v-else
+                                        v-model="editData.full_name"
+                                        class="w-full px-3 py-2 border rounded-md"
+                                    />
                                 </div>
+
                                 <div>
                                     <label
                                         class="block text-sm font-medium text-neutral-600 mb-1"
                                     >
                                         Age
                                     </label>
-                                    <p class="text-black font-semibold">
+
+                                    <p
+                                        v-if="!isEditing"
+                                        class="text-black font-semibold"
+                                    >
                                         {{
-                                            studentData.personal?.age ||
-                                            studentData.age ||
+                                            studentData.personal?.age ??
                                             "Not provided"
                                         }}
                                     </p>
+
+                                    <input
+                                        v-else
+                                        v-model.number="editData.age"
+                                        type="number"
+                                        min="0"
+                                        class="w-full px-3 py-2 border rounded-md"
+                                    />
                                 </div>
+
                                 <div>
                                     <label
                                         class="block text-sm font-medium text-neutral-600 mb-1"
                                     >
                                         International Student
                                     </label>
-                                    <p class="text-black font-semibold">
+
+                                    <p
+                                        v-if="!isEditing"
+                                        class="text-black font-semibold"
+                                    >
                                         {{
                                             studentData.personal
-                                                ?.is_international ||
-                                            studentData.is_international
+                                                ?.is_international
                                                 ? "Yes"
                                                 : "No"
                                         }}
                                     </p>
+
+                                    <select
+                                        v-else
+                                        v-model="editData.is_international"
+                                        class="w-full px-3 py-2 border rounded-md"
+                                    >
+                                        <option :value="true">Yes</option>
+                                        <option :value="false">No</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ACADEMIC INFORMATION -->
                         <div class="bg-neutral-50 rounded-xl p-6">
                             <h2
                                 class="text-lg font-semibold mb-4 text-[#800020] border-b pb-2"
                             >
                                 Academic Information
                             </h2>
+
                             <div
                                 class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
                             >
@@ -168,94 +249,118 @@
                                     >
                                         Current Semester
                                     </label>
-                                    <p class="text-black font-semibold">
+
+                                    <p
+                                        v-if="!isEditing"
+                                        class="text-black font-semibold"
+                                    >
                                         {{
                                             studentData.academic
-                                                ?.current_semester ||
-                                            studentData.current_semester ||
+                                                ?.current_semester ??
                                             "Not provided"
                                         }}
                                     </p>
+
+                                    <input
+                                        v-else
+                                        v-model.number="
+                                            editData.current_semester
+                                        "
+                                        type="number"
+                                        min="1"
+                                        class="w-full px-3 py-2 border rounded-md"
+                                    />
                                 </div>
                             </div>
 
-                            <!-- TAKEN COURSES -->
                             <div class="mt-4">
                                 <label
                                     class="block text-sm font-medium text-neutral-600 mb-2"
                                 >
                                     Taken Courses
                                 </label>
-                                <div
-                                    v-if="
-                                        (studentData.academic?.taken_courses &&
-                                            studentData.academic.taken_courses
-                                                .length) ||
-                                        (studentData.taken_courses &&
-                                            studentData.taken_courses.length)
-                                    "
-                                    class="chip-container"
-                                >
+
+                                <div v-if="!isEditing">
                                     <div
-                                        v-for="course in studentData.academic
-                                            ?.taken_courses ||
-                                        studentData.taken_courses ||
-                                        []"
-                                        :key="course"
-                                        class="chip selected"
+                                        v-if="
+                                            studentData.academic
+                                                ?.taken_courses &&
+                                            studentData.academic.taken_courses
+                                                .length
+                                        "
+                                        class="chip-container"
                                     >
-                                        {{ course }}
+                                        <div
+                                            v-for="course in studentData
+                                                .academic.taken_courses"
+                                            :key="course"
+                                            class="chip selected"
+                                        >
+                                            {{ course }}
+                                        </div>
                                     </div>
+
+                                    <p v-else class="text-neutral-500 italic">
+                                        No courses recorded
+                                    </p>
                                 </div>
-                                <p v-else class="text-neutral-500 italic">
-                                    No courses recorded
-                                </p>
+
+                                <textarea
+                                    v-else
+                                    v-model="editData.taken_courses_string"
+                                    class="w-full px-3 py-2 border rounded-md"
+                                    placeholder="CIS1001, MATH1041, ..."
+                                ></textarea>
                             </div>
 
-                            <!-- GENEDS -->
                             <div class="mt-4">
                                 <label
                                     class="block text-sm font-medium text-neutral-600 mb-2"
                                 >
                                     Taken GenEds
                                 </label>
-                                <div
-                                    v-if="
-                                        (studentData.academic?.taken_geneds &&
-                                            studentData.academic.taken_geneds
-                                                .length) ||
-                                        (studentData.taken_geneds &&
-                                            studentData.taken_geneds.length) ||
-                                        (studentData.geneds &&
-                                            studentData.geneds.length)
-                                    "
-                                    class="chip-container"
-                                >
+
+                                <div v-if="!isEditing">
                                     <div
-                                        v-for="gened in studentData.academic
-                                            ?.taken_geneds ||
-                                        studentData.taken_geneds ||
-                                        studentData.geneds ||
-                                        []"
-                                        :key="gened"
-                                        class="chip selected"
+                                        v-if="
+                                            studentData.academic
+                                                ?.taken_geneds &&
+                                            studentData.academic.taken_geneds
+                                                .length
+                                        "
+                                        class="chip-container"
                                     >
-                                        {{ gened }}
+                                        <div
+                                            v-for="gen in studentData.academic
+                                                .taken_geneds"
+                                            :key="gen"
+                                            class="chip selected"
+                                        >
+                                            {{ gen }}
+                                        </div>
                                     </div>
+
+                                    <p v-else class="text-neutral-500 italic">
+                                        No GenEds recorded
+                                    </p>
                                 </div>
-                                <p v-else class="text-neutral-500 italic">
-                                    No GenEds recorded
-                                </p>
+
+                                <textarea
+                                    v-else
+                                    v-model="editData.taken_geneds_string"
+                                    class="w-full px-3 py-2 border rounded-md"
+                                    placeholder="GA, GB, GD, ..."
+                                ></textarea>
                             </div>
                         </div>
 
-                        <!-- AUTH INFORMATION -->
                         <div class="bg-neutral-50 rounded-xl p-6">
                             <h2
                                 class="text-lg font-semibold mb-4 text-[#800020] border-b pb-2"
                             >
                                 Account Information
                             </h2>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label
@@ -309,7 +414,6 @@
                         </div>
                     </div>
 
-                    <!-- NO DATA STATE -->
                     <div v-else class="text-center py-8">
                         <p class="text-neutral-600">No account data found.</p>
                         <button
@@ -330,6 +434,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { supabase } from "../supabase";
 import axios from "axios";
+import { watch } from "vue";
 
 const router = useRouter();
 
@@ -339,10 +444,131 @@ const studentData = ref(null);
 const authData = ref(null);
 const error = ref("");
 const debugInfo = ref("");
+const isEditing = ref(false);
+const fileInput = ref(null);
+const previewImage = ref(null);
+const selectedFile = ref(null);
+
+const editData = ref({
+    full_name: "",
+    age: "",
+    is_international: false,
+    current_semester: "",
+    taken_courses: [],
+    taken_geneds: [],
+});
+
+const enableEditing = () => {
+    isEditing.value = true;
+
+    editData.value = {
+        full_name: studentData.value.personal?.full_name || "",
+        age: studentData.value.personal?.age || "",
+        is_international: studentData.value.personal?.is_international || false,
+        current_semester: studentData.value.academic?.current_semester || "",
+        taken_courses: [...(studentData.value.academic?.taken_courses || [])],
+        taken_geneds: [...(studentData.value.academic?.taken_geneds || [])],
+    };
+};
+
+const cancelEditing = () => {
+    isEditing.value = false;
+};
+
+const saveChanges = async () => {
+    try {
+        const user = (await supabase.auth.getUser()).data.user;
+
+        let imageUrl = studentData.value.personal?.profile_picture;
+
+        // ---------- Upload image if user selected a file ----------
+        if (selectedFile.value) {
+            const fileExt = selectedFile.value.name.split(".").pop();
+            const fileName = `${user.id}.${fileExt}`;
+
+            const { data, error: uploadError } = await supabase.storage
+                .from("profile_pics")
+                .upload(fileName, selectedFile.value, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+                .from("profile_pics")
+                .getPublicUrl(fileName);
+
+            imageUrl = urlData.publicUrl;
+        }
+
+        // ---------- Update personal info including image ----------
+        await axios.put(`${DATA_URL}/student_personal/${user.id}`, {
+            full_name: editData.value.full_name,
+            age: editData.value.age,
+            is_international: editData.value.is_international,
+            profile_picture: imageUrl,
+        });
+
+        // ---------- Update academic info ----------
+        await axios.put(`${DATA_URL}/student_academic/${user.id}`, {
+            current_semester: editData.value.current_semester,
+            taken_courses: editData.value.taken_courses,
+            taken_geneds: editData.value.taken_geneds,
+        });
+
+        showMessage("Account updated!", "success");
+        isEditing.value = false;
+        selectedFile.value = null;
+        previewImage.value = null; 
+
+        await fetchAccountDetails(); 
+    } catch (err) {
+        console.error(err);
+        showMessage("Failed to save changes", "error");
+    }
+};
+
+watch(isEditing, (editing) => {
+    if (editing) {
+        // Arrays → comma string
+        editData.value.taken_courses_string = (
+            editData.value.taken_courses || []
+        ).join(", ");
+
+        editData.value.taken_geneds_string = (
+            editData.value.taken_geneds || []
+        ).join(", ");
+    } else {
+        // String → arrays
+        editData.value.taken_courses =
+            editData.value.taken_courses_string
+                ?.split(",")
+                .map((c) => c.trim())
+                .filter((c) => c) || [];
+
+        editData.value.taken_geneds =
+            editData.value.taken_geneds_string
+                ?.split(",")
+                .map((g) => g.trim())
+                .filter((g) => g) || [];
+    }
+});
+
+const defaultProfile = "https://placehold.co/200x200?text=No+Image";
+
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  selectedFile.value = file;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImage.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
 
 const DATA_URL = "https://supabase-kqbi.onrender.com";
 
-// message state
 const message = ref({
     text: "",
     type: "",
@@ -375,7 +601,6 @@ const fetchAccountDetails = async () => {
     debugInfo.value = "";
 
     try {
-        // Get current user from Supabase
         const {
             data: { user },
             error: authError,
@@ -388,7 +613,6 @@ const fetchAccountDetails = async () => {
 
         console.log("Fetching data for user:", user.id);
 
-        // Store auth data
         authData.value = {
             email: user.email,
             email_confirmed_at: user.email_confirmed_at,
@@ -396,7 +620,6 @@ const fetchAccountDetails = async () => {
             last_sign_in_at: user.last_sign_in_at,
         };
 
-        // Try the main students endpoint (same as chatpage)
         try {
             console.log("Trying endpoint:", `${DATA_URL}/students/${user.id}`);
             const response = await axios.get(`${DATA_URL}/students/${user.id}`);
@@ -412,7 +635,6 @@ const fetchAccountDetails = async () => {
             console.error("API Error:", apiError);
             debugInfo.value = `API Error: ${apiError.message}\nEndpoint: ${DATA_URL}/students/${user.id}`;
 
-            // Try alternative endpoints
             try {
                 console.log("Trying alternative endpoint: /student_personal");
                 const personalResponse = await axios.get(
@@ -480,7 +702,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Card entrance animation */
 .card-init {
     opacity: 0;
     transform: translateY(30px) scale(0.96);
@@ -493,7 +714,6 @@ onMounted(() => {
     transition: all 700ms ease;
 }
 
-/* Message fade */
 .fade-msg-enter-active,
 .fade-msg-leave-active {
     transition: opacity 0.25s ease, transform 0.25s ease;
@@ -504,7 +724,6 @@ onMounted(() => {
     transform: translateY(-4px);
 }
 
-/* Chips styling */
 .chip-container {
     display: flex;
     flex-wrap: wrap;
@@ -528,7 +747,6 @@ onMounted(() => {
     border-color: #800020;
 }
 
-/* Loading spinner */
 .animate-spin {
     animation: spin 1s linear infinite;
 }
