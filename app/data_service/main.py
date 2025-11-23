@@ -114,3 +114,30 @@ def delete_conversation(user_id: str):
     db = get_supabase()
     db.table("student_conversations").delete().eq("user_id", user_id).execute()
     return {"message": "Conversation cleared"}
+
+# -------- Update Student Personal ----------
+@app.put("/students/update-personal/{user_id}")
+def update_student_personal(user_id: str, payload: Dict[str, Any]):
+    db = get_supabase()
+
+    # Ensure user_id is present in the row
+    update_data = {**payload, "user_id": user_id}
+
+    # Overwrite or create if missing
+    db.table("student_personal").upsert(update_data).execute()
+
+    return {"message": "Personal info updated", "user_id": user_id}
+
+
+# -------- Update Student Academic ----------
+@app.put("/students/update-academic/{user_id}")
+def update_student_academic(user_id: str, payload: Dict[str, Any]):
+    db = get_supabase()
+
+    # Ensure user_id is present in the row
+    update_data = {**payload, "user_id": user_id}
+
+    # Overwrite or create if missing
+    db.table("student_academic").upsert(update_data).execute()
+
+    return {"message": "Academic info updated", "user_id": user_id}

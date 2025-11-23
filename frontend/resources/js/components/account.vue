@@ -326,7 +326,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { supabase } from "../supabase";
 import axios from "axios";
@@ -339,56 +339,197 @@ const studentData = ref(null);
 const authData = ref(null);
 const error = ref("");
 const debugInfo = ref("");
+const isEditing = ref(false);
+const selectedFile = ref(null);
+const previewImage = ref(null);
 
 const DATA_URL = "https://supabase-kqbi.onrender.com";
 
-// message state
-const message = ref({
-    text: "",
-    type: "",
-    visible: false,
+// -----------------------
+// Fields for editing mode
+// -----------------------
+const editData = ref({
+    full_name: "",
+    age: "",
+    is_international: false,
+    current_semester: "",
+    taken_courses: [],
+    taken_geneds: [],
 });
 
+// -----------------------
+// Enable / Disable Editing
+// -----------------------
+const enableEditing = () => {
+    isEditing.value = true;
+
+    editData.value = {
+        full_name: studentData.value.personal?.full_name || "",
+        age: studentData.value.personal?.age || "",
+        is_international: studentData.value.personal?.is_international || false,
+        current_semester: studentData.value.academic?.current_semester || "",
+        taken_courses: [...(studentData.value.academic?.taken_courses || [])],
+        taken_geneds: [...(studentData.value.academic?.taken_geneds || [])],
+    };
+};
+
+const cancelEditing = () => {
+    isEditing.value = false;
+    selectedFile.value = null;
+    previewImage.value = null;
+};
+
+// -----------------------
+// IMAGE PREVIEW HANDLER
+// -----------------------
+const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    selectedFile.value = file;
+
+    const reader = new FileReader();
+    reader.onload = (e) => (previewImage.value = e.target.result);
+    reader.readAsDataURL(file);
+};
+
+// -----------------------
+// NOTIFICATION SYSTEM
+// -----------------------
+const message = ref({ text: "", type: "", visible: false });
+
 const showMessage = (text, type) => {
-    message.value.text = text;
-    message.value.type = type;
-    message.value.visible = true;
-    setTimeout(() => {
-        message.value.visible = false;
-    }, 5000);
+    message.value = { text, type, visible: true };
+    setTimeout(() => (message.value.visible = false), 5000);
 };
 
-const formatDate = (dateString) => {
-    if (!dateString) return "Not available";
-    return new Date(dateString).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+// -----------------------
+// SAVE CHANGES
+// -----------------------
+const saveChanges = async () => {
+    try {
+        isLoading.value = true;
+        const user = (await supabase.auth.getUser()).data.user;
+
+        // -----------------------------
+        // 1. Upload image to bucket "avatars"
+        // -----------------------------
+        let imageUrl = studentData.value.personal?.profile_picture;
+
+        if (selectedFile.value) {
+            const fileExt = selectedFile.value.name.split(".").pop();
+            const fileName = `${user.id}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("avatars")
+                .upload(fileName, selectedFile.value, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: publicURL } = supabase.storage
+                .from("avatars")
+                .getPublicUrl(fileName);
+
+            imageUrl = publicURL.publicUrl;
+        }
+
+        // -----------------------------
+        // 2. Clean Courses
+        // -----------------------------
+        const cleanCourses = editData.value.taken_courses.map((c) =>
+            c.replace(/\s*\(\d+\)\s*$/, "").trim()
+        );
+        const uniqueCourses = [...new Set(cleanCourses)];
+
+        // -----------------------------
+        // 3. Clean GenEd Types
+        // -----------------------------
+        let uniqueGeneds = [
+            ...new Set(editData.value.taken_geneds.map((g) => g.trim())),
+        ];
+
+        // Auto-add GG if international
+        if (editData.value.is_international && !uniqueGeneds.includes("GG")) {
+            uniqueGeneds.push("GG");
+        }
+
+        // -----------------------------
+        // 4. Update personal info
+        // -----------------------------
+        await axios.put(
+            `${DATA_URL}/students/update-personal/${user.id}`,
+            {
+                full_name: editData.value.full_name,
+                age: editData.value.age,
+                is_international: editData.value.is_international,
+                profile_picture: imageUrl,
+            }
+        );
+
+        // -----------------------------
+        // 5. Update academic info
+        // -----------------------------
+        await axios.put(
+            `${DATA_URL}/students/update-academic/${user.id}`,
+            {
+                current_semester: editData.value.current_semester,
+                taken_courses: uniqueCourses,
+                taken_geneds: uniqueGeneds,
+            }
+        );
+
+        showMessage("Account updated successfully!", "success");
+        isEditing.value = false;
+
+        selectedFile.value = null;
+        previewImage.value = null;
+
+        await fetchAccountDetails();
+    } catch (err) {
+        console.error(err);
+        showMessage("Failed to save account changes.", "error");
+    } finally {
+        isLoading.value = false;
+    }
 };
 
+// -----------------------
+// WATCHER to convert arrays <-> strings
+// -----------------------
+watch(isEditing, (editing) => {
+    if (editing) {
+        editData.value.taken_courses_string =
+            (editData.value.taken_courses || []).join(", ");
+        editData.value.taken_geneds_string =
+            (editData.value.taken_geneds || []).join(", ");
+    } else {
+        editData.value.taken_courses =
+            editData.value.taken_courses_string
+                ?.split(",")
+                .map((c) => c.trim())
+                .filter(Boolean) || [];
+
+        editData.value.taken_geneds =
+            editData.value.taken_geneds_string
+                ?.split(",")
+                .map((g) => g.trim())
+                .filter(Boolean) || [];
+    }
+});
+
+// -----------------------
+// FETCH ACCOUNT DETAILS
+// -----------------------
 const fetchAccountDetails = async () => {
     isLoading.value = true;
     error.value = "";
     debugInfo.value = "";
 
     try {
-        // Get current user from Supabase
-        const {
-            data: { user },
-            error: authError,
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("No user logged in.");
 
-        if (authError) throw authError;
-        if (!user) {
-            throw new Error("No user logged in");
-        }
-
-        console.log("Fetching data for user:", user.id);
-
-        // Store auth data
         authData.value = {
             email: user.email,
             email_confirmed_at: user.email_confirmed_at,
@@ -396,149 +537,36 @@ const fetchAccountDetails = async () => {
             last_sign_in_at: user.last_sign_in_at,
         };
 
-        // Try the main students endpoint (same as chatpage)
-        try {
-            console.log("Trying endpoint:", `${DATA_URL}/students/${user.id}`);
-            const response = await axios.get(`${DATA_URL}/students/${user.id}`);
-            console.log("Response received:", response.data);
+        const response = await axios.get(`${DATA_URL}/students/${user.id}`);
+        studentData.value = response.data;
 
-            if (response.data) {
-                studentData.value = response.data;
-                debugInfo.value = JSON.stringify(response.data, null, 2);
-            } else {
-                throw new Error("Empty response from server");
-            }
-        } catch (apiError) {
-            console.error("API Error:", apiError);
-            debugInfo.value = `API Error: ${apiError.message}\nEndpoint: ${DATA_URL}/students/${user.id}`;
-
-            // Try alternative endpoints
-            try {
-                console.log("Trying alternative endpoint: /student_personal");
-                const personalResponse = await axios.get(
-                    `${DATA_URL}/student_personal/${user.id}`
-                );
-                console.log("Personal response:", personalResponse.data);
-
-                const academicResponse = await axios.get(
-                    `${DATA_URL}/student_academic/${user.id}`
-                );
-                console.log("Academic response:", academicResponse.data);
-
-                studentData.value = {
-                    personal: personalResponse.data,
-                    academic: academicResponse.data,
-                };
-                debugInfo.value += `\n\nAlternative endpoint data:\nPersonal: ${JSON.stringify(
-                    personalResponse.data,
-                    null,
-                    2
-                )}\nAcademic: ${JSON.stringify(
-                    academicResponse.data,
-                    null,
-                    2
-                )}`;
-            } catch (altError) {
-                console.error("Alternative endpoint error:", altError);
-                throw new Error(
-                    `Cannot fetch student data: ${apiError.message}`
-                );
-            }
-        }
-
-        if (!studentData.value) {
-            throw new Error("No student data found");
-        }
+        debugInfo.value = JSON.stringify(studentData.value, null, 2);
     } catch (err) {
-        console.error("Error fetching account details:", err);
-        error.value = err.message || "Failed to load account details";
+        console.error(err);
+        error.value = err.message || "Failed to fetch account details.";
         showMessage(error.value, "error");
-        debugInfo.value = `Final Error: ${err.message}\nStack: ${err.stack}`;
     } finally {
         isLoading.value = false;
     }
 };
 
+// -----------------------
+// LOGOUT
+// -----------------------
 const handleLogout = async () => {
     try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-
+        await supabase.auth.signOut();
         router.push("/login");
     } catch (err) {
-        console.error("Logout error:", err);
-        showMessage("Failed to logout", "error");
+        showMessage("Failed to logout.", "error");
     }
 };
 
-onMounted(() => {
-    requestAnimationFrame(() => {
-        showCard.value = true;
-    });
-    fetchAccountDetails();
+// -----------------------
+// ON MOUNT
+// -----------------------
+onMounted(async () => {
+    requestAnimationFrame(() => (showCard.value = true));
+    await fetchAccountDetails();
 });
 </script>
-
-<style scoped>
-/* Card entrance animation */
-.card-init {
-    opacity: 0;
-    transform: translateY(30px) scale(0.96);
-    filter: blur(6px);
-}
-.card-in {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-    transition: all 700ms ease;
-}
-
-/* Message fade */
-.fade-msg-enter-active,
-.fade-msg-leave-active {
-    transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.fade-msg-enter-from,
-.fade-msg-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
-}
-
-/* Chips styling */
-.chip-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 8px 0 4px 0;
-}
-
-.chip {
-    background: #f4f4f5;
-    border: 1px solid #d4d4d8;
-    border-radius: 999px;
-    padding: 6px 12px;
-    transition: all 0.15s ease-in-out;
-    font-size: 0.8rem;
-    color: #27272a;
-}
-
-.chip.selected {
-    background-color: #800020;
-    color: #fff;
-    border-color: #800020;
-}
-
-/* Loading spinner */
-.animate-spin {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-</style>
