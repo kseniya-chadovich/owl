@@ -429,12 +429,15 @@
     </div>
 </template>
 
+
+
+
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { supabase } from "../supabase";
 import axios from "axios";
-import { watch } from "vue";
+
 
 const router = useRouter();
 
@@ -443,12 +446,14 @@ const showCard = ref(false);
 const studentData = ref(null);
 const authData = ref(null);
 const error = ref("");
-const debugInfo = ref("");
 const isEditing = ref(false);
 const fileInput = ref(null);
 const previewImage = ref(null);
 const selectedFile = ref(null);
 
+const DATA_URL = "https://supabase-kqbi.onrender.com";
+
+// ---------------- EDIT DATA MODEL ----------------
 const editData = ref({
     full_name: "",
     age: "",
@@ -456,8 +461,12 @@ const editData = ref({
     current_semester: "",
     taken_courses: [],
     taken_geneds: [],
+
+    taken_courses_string: "",   // REQUIRED
+    taken_geneds_string: "",    // REQUIRED
 });
 
+// ---------------- ENABLE EDITING ----------------
 const enableEditing = () => {
     isEditing.value = true;
 
@@ -466,8 +475,12 @@ const enableEditing = () => {
         age: studentData.value.personal?.age || "",
         is_international: studentData.value.personal?.is_international || false,
         current_semester: studentData.value.academic?.current_semester || "",
+
         taken_courses: [...(studentData.value.academic?.taken_courses || [])],
         taken_geneds: [...(studentData.value.academic?.taken_geneds || [])],
+
+        taken_courses_string: (studentData.value.academic?.taken_courses || []).join(", "),
+        taken_geneds_string: (studentData.value.academic?.taken_geneds || []).join(", "),
     };
 };
 
@@ -475,115 +488,21 @@ const cancelEditing = () => {
     isEditing.value = false;
 };
 
-const saveChanges = async () => {
-    try {
-        const user = (await supabase.auth.getUser()).data.user;
-
-        let imageUrl = studentData.value.personal?.profile_picture;
-
-        // ---------- Upload image if user selected a file ----------
-        if (selectedFile.value) {
-            const fileExt = selectedFile.value.name.split(".").pop();
-            const fileName = `${user.id}.${fileExt}`;
-
-            const { data, error: uploadError } = await supabase.storage
-                .from("profile_pics")
-                .upload(fileName, selectedFile.value, { upsert: true });
-
-            if (uploadError) throw uploadError;
-
-            const { data: urlData } = supabase.storage
-                .from("profile_pics")
-                .getPublicUrl(fileName);
-
-            imageUrl = urlData.publicUrl;
-        }
-
-        // ---------- Update personal info including image ----------
-        await axios.put(`${DATA_URL}/student_personal/${user.id}`, {
-            full_name: editData.value.full_name,
-            age: editData.value.age,
-            is_international: editData.value.is_international,
-            profile_picture: imageUrl,
-        });
-
-        // ---------- Update academic info ----------
-        await axios.put(`${DATA_URL}/student_academic/${user.id}`, {
-            current_semester: editData.value.current_semester,
-            taken_courses: editData.value.taken_courses,
-            taken_geneds: editData.value.taken_geneds,
-        });
-
-        showMessage("Account updated!", "success");
-        isEditing.value = false;
-        selectedFile.value = null;
-        previewImage.value = null; 
-
-        await fetchAccountDetails(); 
-    } catch (err) {
-        console.error(err);
-        showMessage("Failed to save changes", "error");
-    }
-};
-
-watch(isEditing, (editing) => {
-    if (editing) {
-        // Arrays → comma string
-        editData.value.taken_courses_string = (
-            editData.value.taken_courses || []
-        ).join(", ");
-
-        editData.value.taken_geneds_string = (
-            editData.value.taken_geneds || []
-        ).join(", ");
-    } else {
-        // String → arrays
-        editData.value.taken_courses =
-            editData.value.taken_courses_string
-                ?.split(",")
-                .map((c) => c.trim())
-                .filter((c) => c) || [];
-
-        editData.value.taken_geneds =
-            editData.value.taken_geneds_string
-                ?.split(",")
-                .map((g) => g.trim())
-                .filter((g) => g) || [];
-    }
-});
-
+// ---------------- IMAGE UPLOAD PREVIEW ----------------
 const defaultProfile = "https://placehold.co/200x200?text=No+Image";
 
 const handleImageUpload = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+    const file = event.target.files[0];
+    if (!file) return;
 
-  selectedFile.value = file;
+    selectedFile.value = file;
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    previewImage.value = e.target.result;
-  };
-  reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onload = (e) => (previewImage.value = e.target.result);
+    reader.readAsDataURL(file);
 };
 
-const DATA_URL = "https://supabase-kqbi.onrender.com";
-
-const message = ref({
-    text: "",
-    type: "",
-    visible: false,
-});
-
-const showMessage = (text, type) => {
-    message.value.text = text;
-    message.value.type = type;
-    message.value.visible = true;
-    setTimeout(() => {
-        message.value.visible = false;
-    }, 5000);
-};
-
+// ---------------- FORMAT DATES ----------------
 const formatDate = (dateString) => {
     if (!dateString) return "Not available";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -595,23 +514,126 @@ const formatDate = (dateString) => {
     });
 };
 
-const fetchAccountDetails = async () => {
-    isLoading.value = true;
-    error.value = "";
-    debugInfo.value = "";
+// ---------------- UI MESSAGES ----------------
+const message = ref({
+    text: "",
+    type: "",
+    visible: false,
+});
 
+const showMessage = (text, type) => {
+    message.value.text = text;
+    message.value.type = type;
+    message.value.visible = true;
+    setTimeout(() => (message.value.visible = false), 5000);
+};
+
+// ---------------- SAVE CHANGES (FIXED) ----------------
+const saveChanges = async () => {
     try {
-        const {
-            data: { user },
-            error: authError,
-        } = await supabase.auth.getUser();
+        isLoading.value = true;
+        const user = (await supabase.auth.getUser()).data.user;
 
-        if (authError) throw authError;
-        if (!user) {
-            throw new Error("No user logged in");
+        let imageUrl = studentData.value.personal?.profile_picture;
+
+        // ---------- Upload to BUCKET "avatars" ----------
+        if (selectedFile.value) {
+            const ext = selectedFile.value.name.split(".").pop();
+            const fileName = `${user.id}.${ext}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("avatars")
+                .upload(fileName, selectedFile.value, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+                .from("avatars")
+                .getPublicUrl(fileName);
+
+            imageUrl = urlData.publicUrl;
         }
 
-        console.log("Fetching data for user:", user.id);
+        // ---------- CLEAN COURSES ----------
+        const formattedCourses = editData.value.taken_courses_string
+            .split(",")
+            .map((c) => c.trim())
+            .filter((c) => c.length > 0)
+            .map((c) => c.replace(/\s*\(\d+\)\s*$/, "").trim());
+
+        const uniqueCourses = [...new Set(formattedCourses)];
+
+        // ---------- CLEAN GENEDS ----------
+        const formattedGeneds = editData.value.taken_geneds_string
+            .split(",")
+            .map((g) => g.trim().toUpperCase())
+            .filter((g) => g.length > 0);
+
+        let uniqueGeneds = [...new Set(formattedGeneds)];
+
+        // auto-add GG if international
+        if (editData.value.is_international && !uniqueGeneds.includes("GG")) {
+            uniqueGeneds.push("GG");
+        }
+
+        // ---------- UPDATE PERSONAL ----------
+        await axios.put(`${DATA_URL}/students/update-personal/${user.id}`, {
+            full_name: editData.value.full_name,
+            age: editData.value.age,
+            is_international: editData.value.is_international,
+            profile_picture: imageUrl,
+        });
+
+        // ---------- UPDATE ACADEMIC ----------
+        await axios.put(`${DATA_URL}/students/update-academic/${user.id}`, {
+            current_semester: editData.value.current_semester,
+            taken_courses: uniqueCourses,
+            taken_geneds: uniqueGeneds,
+        });
+
+        showMessage("Account updated!", "success");
+
+        isEditing.value = false;
+        selectedFile.value = null;
+        previewImage.value = null;
+        await fetchAccountDetails();
+
+    } catch (err) {
+        console.error(err);
+        showMessage("Failed to save changes", "error");
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+// ---------------- LIVE STRING → ARRAY SYNC ----------------
+watch(
+    () => editData.value.taken_courses_string,
+    (newVal) => {
+        editData.value.taken_courses = newVal
+            .split(",")
+            .map((c) => c.trim())
+            .filter((c) => c.length > 0);
+    }
+);
+
+watch(
+    () => editData.value.taken_geneds_string,
+    (newVal) => {
+        editData.value.taken_geneds = newVal
+            .split(",")
+            .map((g) => g.trim())
+            .filter((g) => g.length > 0);
+    }
+);
+
+// ---------------- FETCH DATA ----------------
+const fetchAccountDetails = async () => {
+    try {
+        isLoading.value = true;
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("No user logged in.");
 
         authData.value = {
             email: user.email,
@@ -620,83 +642,30 @@ const fetchAccountDetails = async () => {
             last_sign_in_at: user.last_sign_in_at,
         };
 
-        try {
-            console.log("Trying endpoint:", `${DATA_URL}/students/${user.id}`);
-            const response = await axios.get(`${DATA_URL}/students/${user.id}`);
-            console.log("Response received:", response.data);
+        const resp = await axios.get(`${DATA_URL}/students/${user.id}`);
+        studentData.value = resp.data;
 
-            if (response.data) {
-                studentData.value = response.data;
-                debugInfo.value = JSON.stringify(response.data, null, 2);
-            } else {
-                throw new Error("Empty response from server");
-            }
-        } catch (apiError) {
-            console.error("API Error:", apiError);
-            debugInfo.value = `API Error: ${apiError.message}\nEndpoint: ${DATA_URL}/students/${user.id}`;
-
-            try {
-                console.log("Trying alternative endpoint: /student_personal");
-                const personalResponse = await axios.get(
-                    `${DATA_URL}/student_personal/${user.id}`
-                );
-                console.log("Personal response:", personalResponse.data);
-
-                const academicResponse = await axios.get(
-                    `${DATA_URL}/student_academic/${user.id}`
-                );
-                console.log("Academic response:", academicResponse.data);
-
-                studentData.value = {
-                    personal: personalResponse.data,
-                    academic: academicResponse.data,
-                };
-                debugInfo.value += `\n\nAlternative endpoint data:\nPersonal: ${JSON.stringify(
-                    personalResponse.data,
-                    null,
-                    2
-                )}\nAcademic: ${JSON.stringify(
-                    academicResponse.data,
-                    null,
-                    2
-                )}`;
-            } catch (altError) {
-                console.error("Alternative endpoint error:", altError);
-                throw new Error(
-                    `Cannot fetch student data: ${apiError.message}`
-                );
-            }
-        }
-
-        if (!studentData.value) {
-            throw new Error("No student data found");
-        }
     } catch (err) {
-        console.error("Error fetching account details:", err);
-        error.value = err.message || "Failed to load account details";
+        error.value = err.message || "Failed to fetch account details";
         showMessage(error.value, "error");
-        debugInfo.value = `Final Error: ${err.message}\nStack: ${err.stack}`;
     } finally {
         isLoading.value = false;
     }
 };
 
+// ---------------- LOGOUT ----------------
 const handleLogout = async () => {
     try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-
+        await supabase.auth.signOut();
         router.push("/login");
     } catch (err) {
-        console.error("Logout error:", err);
         showMessage("Failed to logout", "error");
     }
 };
 
+// ---------------- MOUNT ----------------
 onMounted(() => {
-    requestAnimationFrame(() => {
-        showCard.value = true;
-    });
+    requestAnimationFrame(() => (showCard.value = true));
     fetchAccountDetails();
 });
 </script>
@@ -760,3 +729,4 @@ onMounted(() => {
     }
 }
 </style>
+
