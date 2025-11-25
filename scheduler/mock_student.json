@@ -1,0 +1,15 @@
+{
+  "taken_courses": ["CIS 1051", "MATH 1041", "MATH 1021", "CIS 1001", "SCTC 1001"],
+  "taken_geneds": ["GG", "GS", "GW"],
+  "gened_preference": [],
+  "min_credits": 12,
+  "max_credits": 15,
+  "current_semester": 3,
+  "preferred_days": ["MWF"],
+  "no_days": ["TTh"],
+  "lunch_break": true,
+  "no_mornings": false,
+  "no_evenings": false,
+  "prefer_mode": "offline",
+  "avoid_professors": ["Azari"]
+}
