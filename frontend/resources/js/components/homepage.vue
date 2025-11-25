@@ -2,23 +2,21 @@
     <div
         class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white"
     >
-        <!-- NAVBAR -->
+    
         <header
             class="flex justify-between items-center max-w-7xl mx-auto px-8 py-6"
         >
             <h1 class="text-2xl font-bold tracking-tight">AI Scheduler</h1>
             
-            <!-- AUTH BUTTONS CONTAINER -->
             <div class="flex space-x-4">
-                <!-- 1. Signup Button -->
+
                 <button
                     @click="goTo('/signup')"
                     class="border-2 border-white bg-white text-[#800020] font-semibold px-5 py-2 rounded-xl hover:bg-transparent hover:text-white transition-all duration-300"
                 >
                     Signup
                 </button>
-                
-                <!-- 2. Login Button -->
+
                 <button
                     @click="goTo('/login')"
                     class="border-2 border-white bg-white text-[#800020] font-semibold px-5 py-2 rounded-xl hover:bg-transparent hover:text-white transition-all duration-300"
@@ -28,7 +26,6 @@
             </div>
         </header>
 
-        <!-- HERO -->
         <main class="text-center mt-20 px-6">
             <p
                 class="inline-block mb-4 px-4 py-1 rounded-full bg-white/15 border border-white/30 text-sm font-medium fade-up"
@@ -76,7 +73,6 @@
             </div>
         </main>
 
-        <!-- FEATURES -->
         <section
             class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto px-6"
         >
@@ -93,7 +89,6 @@
             </div>
         </section>
 
-        <!-- FOOTER -->
         <footer
             class="mt-24 text-center text-white/70 border-t border-white/20 py-8 text-sm fade-up"
             :class="{ in: showFeatures }"
@@ -106,12 +101,9 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { useRouter } from 'vue-router'; // Import useRouter for navigation
-
-// Setup Router
+import { useRouter } from 'vue-router'; 
 const router = useRouter();
 
-// Navigation function
 const goTo = (path) => {
     router.push(path);
 };
@@ -138,17 +130,15 @@ const features = [
 ];
 
 onMounted(() => {
-    // Trigger hero section
     requestAnimationFrame(() => {
         showHero.value = true;
-        // Reveal features shortly after hero finishes
         setTimeout(() => (showFeatures.value = true), 550);
     });
 });
 </script>
 
 <style scoped>
-/* Reusable fade/slide-in with blur */
+
 .fade-up {
     opacity: 0;
     transform: translateY(16px);
@@ -161,7 +151,6 @@ onMounted(() => {
     filter: blur(0);
 }
 
-/* Subtle "pop" for headline */
 @keyframes popIn {
     0% {
         transform: scale(0.98);

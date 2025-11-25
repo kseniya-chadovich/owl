@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-white relative">
 
-    <!-- HAMBURGER BUTTON -->
     <button
       @click="sidebarOpen = true"
       class="fixed top-4 left-4 z-50 bg-white border border-zinc-300 p-2 rounded-lg shadow hover:bg-zinc-100"
@@ -14,14 +13,12 @@
       </svg>
     </button>
 
-    <!-- OVERLAY -->
     <div
       v-if="sidebarOpen"
       @click="sidebarOpen = false"
       class="fixed inset-0 bg-black bg-opacity-40 z-40"
     ></div>
 
-    <!-- SIDEBAR -->
     <div
       class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
@@ -50,22 +47,18 @@
       </div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="max-w-2xl mx-auto pt-20 px-4">
 
       <h1 class="text-3xl font-bold text-[#800020] mb-6">
         Your Current Schedule
       </h1>
 
-      <!-- LOADING -->
       <div v-if="isLoading" class="text-zinc-600">Loading…</div>
 
-      <!-- NO SCHEDULE -->
       <div v-else-if="!schedule">
         <p class="text-zinc-600">No schedule saved yet.</p>
       </div>
-
-      <!-- SHOW SCHEDULE -->
+      
       <div v-else>
         <div class="p-4 rounded-xl border border-zinc-300 bg-zinc-50 shadow-sm">
 

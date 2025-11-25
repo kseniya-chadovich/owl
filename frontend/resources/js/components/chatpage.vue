@@ -1,10 +1,10 @@
 <template>
-    <!-- HAMBURGER TOGGLE -->
+    
     <button
         @click="sidebarOpen = true"
         class="fixed top-4 left-4 z-50 bg-white border border-zinc-300 p-2 rounded-lg shadow hover:bg-zinc-100"
     >
-        <!-- Hamburger icon -->
+
         <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6 text-[#800020]"
@@ -21,14 +21,12 @@
         </svg>
     </button>
 
-    <!-- DARK OVERLAY WHEN SIDEBAR IS OPEN -->
     <div
         v-if="sidebarOpen"
         @click="sidebarOpen = false"
         class="fixed inset-0 bg-black bg-opacity-40 z-40"
     ></div>
 
-    <!-- SIDEBAR -->
     <div
         class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300"
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
@@ -61,7 +59,7 @@
     </div>
 
     <div class="min-h-screen bg-white flex flex-col items-center py-16 px-4">
-        <!-- TITLE -->
+
         <div class="text-center mb-12">
             <h1 class="text-4xl md:text-5xl font-bold text-[#800020]">
                 Chat with Your Scheduling Assistant
@@ -71,7 +69,6 @@
             </p>
         </div>
 
-        <!-- INITIAL LOADING SPINNER -->
         <div v-if="isInitializing" class="py-20 text-center text-zinc-500">
             <div
                 class="animate-spin h-10 w-10 border-4 border-[#800020] border-t-transparent rounded-full mx-auto"
@@ -79,12 +76,11 @@
             <p class="mt-4 text-lg">Loading your chat session…</p>
         </div>
 
-        <!-- CHAT CONTAINER -->
         <div
             v-else
             class="w-full max-w-3xl bg-white border border-zinc-200 rounded-3xl shadow-sm flex flex-col overflow-hidden"
         >
-            <!-- STATUS -->
+
             <div
                 v-if="errorMessage"
                 class="mx-4 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
@@ -92,7 +88,6 @@
                 {{ errorMessage }}
             </div>
 
-            <!-- CHAT MESSAGES -->
             <div class="flex-1 p-6 space-y-6 overflow-y-auto">
                 <div
                     v-for="message in messages"
@@ -113,7 +108,6 @@
                         👤
                     </div>
 
-                    <!-- TEXT MESSAGES -->
                     <div
                         v-if="!message.schedules"
                         class="max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed"
@@ -125,7 +119,6 @@
                     >
                         {{ message.text }}
 
-                        <!-- Confirmation options -->
                         <div
                             v-if="message.confirmOptions"
                             class="flex gap-3 mt-3"
@@ -141,8 +134,6 @@
                         </div>
                     </div>
 
-                    <!-- SCHEDULE CARDS -->
-                    <!-- SCHEDULE CARDS -->
                     <div v-else class="flex flex-col gap-4 max-w-[80%]">
                         <div
                             v-for="(schedule, index) in message.schedules"
@@ -156,7 +147,7 @@
                                     : 'border-zinc-200 hover:bg-zinc-50 hover:shadow-sm',
                             ]"
                         >
-                            <!-- Header row: title + check -->
+
                             <div class="flex justify-between items-center mb-3">
                                 <div class="flex items-center gap-2">
                                     <h3 class="font-semibold text-[#800020]">
@@ -179,8 +170,7 @@
                                     ✅ Selected
                                 </span>
                             </div>
-
-                            <!-- Responsive table-style layout -->
+                            
                             <div class="mt-1 overflow-x-auto">
                                 <table
                                     class="min-w-full text-xs sm:text-sm border-separate border-spacing-y-1"
@@ -220,7 +210,7 @@
                                             :key="course.course"
                                             class="bg-zinc-50/80 hover:bg-zinc-100 transition-colors"
                                         >
-                                            <!-- Course name -->
+
                                             <td
                                                 class="px-3 py-2 rounded-l-xl align-top"
                                             >
@@ -229,7 +219,7 @@
                                                 >
                                                     {{ course.course }}
                                                 </div>
-                                                <!-- On small screens, show time + extra below course -->
+
                                                 <div
                                                     class="mt-1 text-[11px] text-zinc-500 sm:hidden space-y-0.5"
                                                 >
@@ -255,14 +245,12 @@
                                                 </div>
                                             </td>
 
-                                            <!-- Time (desktop) -->
                                             <td
                                                 class="px-3 py-2 align-top text-zinc-700 hidden sm:table-cell"
                                             >
                                                 {{ course.day_time || "TBD" }}
                                             </td>
 
-                                            <!-- Credits -->
                                             <td class="px-3 py-2 align-top">
                                                 <span
                                                     class="inline-flex items-center px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-800 text-[11px]"
@@ -271,7 +259,6 @@
                                                 </span>
                                             </td>
 
-                                            <!-- Category / GenEd (badge) -->
                                             <td
                                                 class="px-3 py-2 align-top hidden md:table-cell"
                                             >
@@ -294,7 +281,6 @@
                                                 </div>
                                             </td>
 
-                                            <!-- Instructor (desktop-wide) -->
                                             <td
                                                 class="px-3 py-2 align-top text-zinc-700 hidden lg:table-cell rounded-r-xl"
                                             >
@@ -315,7 +301,6 @@
                                 </table>
                             </div>
 
-                            <!-- Total credits footer -->
                             <div
                                 class="mt-3 flex justify-between items-center text-xs sm:text-sm text-zinc-600"
                             >
@@ -350,7 +335,6 @@
                 </div>
             </div>
 
-            <!-- INPUT AREA -->
             <div class="border-t border-zinc-200 bg-zinc-50 p-4">
                 <div class="flex items-end gap-3">
                     <textarea
@@ -438,26 +422,19 @@ import { supabase } from "../supabase";
 const AI_URL = "https://scheduling-assistant-zl2c.onrender.com";
 const DATA_URL = "https://supabase-kqbi.onrender.com";
 
-/* ----------------------------------------
-   STATE VARIABLES
----------------------------------------- */
 const user = ref(null);
 const messages = ref([]);
 const draftMessage = ref("");
 const isLoading = ref(false);
 const sidebarOpen = ref(false);
 
-// Show spinner while loading conversation from DB
 const isInitializing = ref(true);
 
-// Schedule selection state
 const selectedScheduleIndex = ref(null);
 const selectedMessageId = ref(null);
 
-// Only one confirm message can exist
 const confirmMessageId = ref(null);
 
-// Suggested shortcut chips
 const suggestions = [
     "No morning classes",
     "Only 12 credits",
@@ -465,19 +442,14 @@ const suggestions = [
     "Avoid online courses",
 ];
 
-// Helpers
 let messageCounter = 0;
 const newId = () => `msg-${messageCounter++}`;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Remove section numbers e.g. "CIS 1051 (801)" → "CIS 1051"
 const stripSection = (courseName) => {
     return courseName.replace(/\s*\(\d+\)\s*$/, "").trim();
 };
 
-/* ----------------------------------------
-   LOAD USER + CONVERSATION FROM DB
----------------------------------------- */
 const loadUser = async () => {
     const { data } = await supabase.auth.getUser();
     user.value = data?.user;
@@ -532,16 +504,10 @@ const loadUser = async () => {
     isInitializing.value = false;
 };
 
-/* ----------------------------------------
-   MOUNT APP
----------------------------------------- */
 onMounted(async () => {
     await loadUser();
 });
 
-/* ----------------------------------------
-   SAVE CHAT TO DATABASE
----------------------------------------- */
 const saveConversation = async () => {
     if (!user.value) return;
 
@@ -556,9 +522,6 @@ const saveConversation = async () => {
     });
 };
 
-/* ----------------------------------------
-   SEND MESSAGE TO AI SERVICE
----------------------------------------- */
 const sendMessage = async () => {
     if (!draftMessage.value.trim() || !user.value) return;
 
@@ -615,9 +578,6 @@ const sendMessage = async () => {
     }
 };
 
-/* ----------------------------------------
-   SELECT A SCHEDULE (ONE CONFIRM MESSAGE)
----------------------------------------- */
 const handleSelectSchedule = (index, message) => {
     selectedScheduleIndex.value = index;
     selectedMessageId.value = message.id;
@@ -642,18 +602,13 @@ const handleSelectSchedule = (index, message) => {
     }
 };
 
-/* ----------------------------------------
-   CONFIRM / ADD MORE
----------------------------------------- */
 const handleConfirmOption = async (option) => {
     const schedMsg = messages.value.find(
         (m) => m.id === selectedMessageId.value
     );
     const selected = schedMsg.schedules[selectedScheduleIndex.value];
 
-    /* ---------- CONFIRM SCHEDULE ---------- */
     if (option === "Confirm") {
-        /* --- Build detailed schedule preview --- */
         const scheduleTextLines = selected.courses
             .map(
                 (c) =>
@@ -671,13 +626,11 @@ const handleConfirmOption = async (option) => {
             text: `I confirm this schedule:\n${scheduleTextLines}`,
         });
 
-        /* --- Save selected schedule --- */
         await axios.post(`${DATA_URL}/students/schedules`, {
             user_id: user.value.id,
             schedule: selected,
         });
 
-        /* --- UPDATE STUDENT ACADEMIC PROGRESS --- */
         const academicResp = await axios.get(
             `${DATA_URL}/students/${user.value.id}`
         );
@@ -712,17 +665,14 @@ const handleConfirmOption = async (option) => {
             },
         });
 
-        /* --- Reset AI session --- */
         await axios.post(`${AI_URL}/reset`, {
             user_id: user.value.id,
         });
 
-        /* --- Reset DB conversation --- */
         await axios.delete(
             `${DATA_URL}/students/conversation/${user.value.id}`
         );
 
-        /* ---------- COUNTDOWN UI ---------- */
         let countdown = 5;
         const countdownMsgId = newId();
 
@@ -756,7 +706,6 @@ const handleConfirmOption = async (option) => {
         return;
     }
 
-    /* ---------- ADD MORE REQUIREMENTS ---------- */
     messages.value.push({
         id: newId(),
         role: "user",
@@ -773,16 +722,10 @@ const handleConfirmOption = async (option) => {
     await saveConversation();
 };
 
-/* ----------------------------------------
-   SUGGESTION BUTTONS
----------------------------------------- */
 const applySuggestion = (s) => {
     draftMessage.value = s;
 };
 
-/* ----------------------------------------
-   AUTO RESIZE TEXTAREA
----------------------------------------- */
 const textareaRef = ref(null);
 const autoResize = () => {
     const el = textareaRef.value;
@@ -791,9 +734,6 @@ const autoResize = () => {
     el.style.height = el.scrollHeight + "px";
 };
 
-/* ----------------------------------------
-   MANUAL RESET BUTTON
----------------------------------------- */
 const resetConversation = async () => {
     if (!user.value) return;
 

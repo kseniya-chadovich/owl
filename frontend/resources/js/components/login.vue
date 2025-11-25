@@ -2,7 +2,6 @@
     <div
         class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white flex flex-col"
     >
-        <!-- NAVBAR -->
         <header
             class="w-full border-b border-white/10 bg-black/10 backdrop-blur-sm"
         >
@@ -30,15 +29,12 @@
             </div>
         </header>
 
-        <!-- MAIN -->
         <main class="flex-1 flex items-center justify-center px-6 pb-14">
             <div class="relative w-full max-w-md">
-                <!-- Glow effect -->
                 <div
                     class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-white/40 via-white/5 to-transparent blur-2xl opacity-70"
                 ></div>
 
-                <!-- MESSAGE BOX -->
                 <transition name="fade-msg">
                     <div
                         v-if="message.visible"
@@ -59,7 +55,6 @@
                     </div>
                 </transition>
 
-                <!-- LOGIN CARD -->
                 <div
                     :class="[
                         'relative z-10 bg-white/90 text-black backdrop-blur-xl rounded-2xl border border-white/40 px-8 py-10 shadow-xl',
@@ -75,7 +70,7 @@
                     </p>
 
                     <form @submit.prevent="handleLogin" class="space-y-5">
-                        <!-- EMAIL -->
+
                         <div class="relative">
                             <input
                                 type="email"
@@ -98,7 +93,6 @@
                             </label>
                         </div>
 
-                        <!-- PASSWORD -->
                         <div class="relative">
                             <input
                                 :type="showPassword ? 'text' : 'password'"
@@ -120,7 +114,6 @@
                                 Password
                             </label>
 
-                            <!-- Eye Icon -->
                             <button
                                 type="button"
                                 @click="showPassword = !showPassword"
@@ -131,7 +124,6 @@
                             </button>
                         </div>
 
-                        <!-- LOGIN BUTTON -->
                         <button
                             type="submit"
                             class="w-full bg-[#880808] text-white font-semibold text-base py-2.5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-60"
@@ -140,7 +132,6 @@
                             {{ isLoading ? "Logging in..." : "Login" }}
                         </button>
 
-                        <!-- SIGN UP LINK -->
                         <p class="text-sm text-center text-neutral-800 mt-1">
                             Don’t have an account?
                             <button
@@ -169,12 +160,8 @@ const email = ref("");
 const password = ref("");
 const isLoading = ref(false);
 const showCard = ref(false);
-
-// For floating labels
 const emailFocused = ref(false);
 const passwordFocused = ref(false);
-
-// For password visibility
 const showPassword = ref(false);
 
 const message = ref({
@@ -232,7 +219,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Message fade */
+
 .fade-msg-enter-active,
 .fade-msg-leave-active {
     transition: opacity 0.25s ease, transform 0.25s ease;
@@ -243,7 +230,6 @@ onMounted(() => {
     transform: translateY(-4px);
 }
 
-/* Card entrance animation */
 .card-init {
     opacity: 0;
     transform: translateY(30px) scale(0.96);
@@ -256,15 +242,13 @@ onMounted(() => {
     transition: all 700ms ease;
 }
 
-/* Floating label styles */
 .floating-input {
     padding-top: 1.4rem;
     padding-bottom: 0.9rem;
 }
 
-/* visible, soft gray placeholder */
 .floating-input::placeholder {
-    color: rgba(75, 85, 99, 0.8); /* neutral-600 */
+    color: rgba(75, 85, 99, 0.8);
     opacity: 1;
 }
 
@@ -274,7 +258,7 @@ onMounted(() => {
     top: 50%;
     transform: translateY(-50%);
     font-size: 0.85rem;
-    color: rgba(55, 65, 81, 0.9); /* neutral-700 */
+    color: rgba(55, 65, 81, 0.9); 
     pointer-events: none;
     transition: all 0.18s ease-out;
     background: transparent;

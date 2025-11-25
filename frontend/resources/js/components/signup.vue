@@ -2,7 +2,7 @@
     <div
         class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white flex flex-col"
     >
-        <!-- NAVBAR -->
+    
         <header
             class="w-full border-b border-white/10 bg-black/10 backdrop-blur-sm"
         >
@@ -31,15 +31,13 @@
             </div>
         </header>
 
-        <!-- MAIN -->
         <main class="flex-1 flex items-start justify-center px-4 py-10">
             <div class="relative w-full max-w-4xl">
-                <!-- Glow effect -->
+
                 <div
                     class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-white/40 via-white/5 to-transparent blur-2xl opacity-70"
                 ></div>
 
-                <!-- MESSAGE BOX -->
                 <transition name="fade-msg">
                     <div
                         v-if="message.visible"
@@ -60,7 +58,6 @@
                     </div>
                 </transition>
 
-                <!-- SIGNUP CARD -->
                 <div
                     :class="[
                         'relative z-10 bg-white/95 text-black backdrop-blur-xl rounded-2xl border border-white/40 px-8 py-10 shadow-xl',
@@ -77,7 +74,7 @@
                     </p>
 
                     <form @submit.prevent="handleSubmit" class="space-y-6">
-                        <!-- BASIC INFO -->
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label
@@ -112,7 +109,6 @@
                             </div>
                         </div>
 
-                        <!-- EMAIL + PASSWORD -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label
@@ -180,7 +176,6 @@
                             </div>
                         </div>
 
-                        <!-- INTERNATIONAL + ENROLLMENT + SEMESTER -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <p
@@ -272,7 +267,6 @@
                             </div>
                         </div>
 
-                        <!-- COURSES -->
                         <div>
                             <label
                                 class="block text-sm font-semibold text-neutral-800 mb-1"
@@ -317,7 +311,6 @@
                             />
                         </div>
 
-                        <!-- GENEDS -->
                         <div>
                             <label
                                 class="block text-sm font-semibold text-neutral-800 mb-1"
@@ -372,7 +365,6 @@
                             />
                         </div>
 
-                        <!-- SUBMIT -->
                         <div>
                             <button
                                 type="submit"
@@ -414,7 +406,6 @@ const showCard = ref(false);
 const DATA_API_URL =
     import.meta.env.VITE_DATA_API_URL || "https://supabase-kqbi.onrender.com";
 
-// form fields
 const firstName = ref("");
 const lastName = ref("");
 const email = ref("");
@@ -427,7 +418,6 @@ const enrollment = ref("");
 const otherCourse = ref("");
 const otherGened = ref("");
 
-// chips
 const courses = ref([
     "CIS 1001",
     "SCTC 2001",
@@ -496,7 +486,7 @@ const geneds = ref([
 const selectedCourses = ref([]);
 const selectedGeneds = ref([]);
 
-// message state
+
 const message = ref({
     text: "",
     type: "",
@@ -539,7 +529,7 @@ const handleSubmit = async () => {
     }
 
     try {
-        // AUTO-ADD REQUIRED GENEDS
+
         if (!selectedGeneds.value.includes("GS")) {
             selectedGeneds.value.push("GS");
         }
@@ -645,7 +635,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Card entrance animation */
+
 .card-init {
     opacity: 0;
     transform: translateY(30px) scale(0.96);
@@ -657,7 +647,7 @@ onMounted(() => {
     filter: blur(0);
     transition: all 700ms ease;
 }
-/* Message fade */
+
 .fade-msg-enter-active,
 .fade-msg-leave-active {
     transition: opacity 0.25s ease, transform 0.25s ease;
@@ -668,7 +658,6 @@ onMounted(() => {
     transform: translateY(-4px);
 }
 
-/* Chips styling (courses & geneds) */
 .chip-container {
     display: flex;
     flex-wrap: wrap;
@@ -698,7 +687,6 @@ onMounted(() => {
     border-color: #800020;
 }
 
-/* disabled chip (e.g. auto-added GS / GG) */
 .chip.disabled {
     opacity: 0.45;
     cursor: not-allowed;

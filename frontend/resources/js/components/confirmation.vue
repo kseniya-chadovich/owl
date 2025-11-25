@@ -2,7 +2,7 @@
     <div
         class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white flex flex-col"
     >
-        <!-- NAVBAR -->
+
         <header
             class="w-full border-b border-white/10 bg-black/10 backdrop-blur-sm"
         >
@@ -36,15 +36,13 @@
             </div>
         </header>
 
-        <!-- MAIN -->
         <main class="flex-1 flex items-center justify-center px-4 py-10">
             <div class="relative w-full max-w-xl">
-                <!-- Glow effect -->
+
                 <div
                     class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-white/40 via-white/5 to-transparent blur-2xl opacity-70"
                 ></div>
 
-                <!-- CARD -->
                 <div
                     class="relative z-10 bg-white/95 text-black backdrop-blur-xl rounded-2xl border border-white/40 px-8 py-10 shadow-xl text-center animate-fade-up"
                 >
@@ -84,7 +82,7 @@
 </template>
 
 <style scoped>
-/* simple appear animation */
+
 @keyframes fadeUp {
     from {
         opacity: 0;

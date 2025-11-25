@@ -429,9 +429,6 @@
     </div>
 </template>
 
-
-
-
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -453,7 +450,6 @@ const selectedFile = ref(null);
 
 const DATA_URL = "https://supabase-kqbi.onrender.com";
 
-// ---------------- EDIT DATA MODEL ----------------
 const editData = ref({
     full_name: "",
     age: "",
@@ -462,11 +458,10 @@ const editData = ref({
     taken_courses: [],
     taken_geneds: [],
 
-    taken_courses_string: "",   // REQUIRED
-    taken_geneds_string: "",    // REQUIRED
+    taken_courses_string: "",  
+    taken_geneds_string: "",  
 });
 
-// ---------------- ENABLE EDITING ----------------
 const enableEditing = () => {
     isEditing.value = true;
 
@@ -488,7 +483,6 @@ const cancelEditing = () => {
     isEditing.value = false;
 };
 
-// ---------------- IMAGE UPLOAD PREVIEW ----------------
 const defaultProfile = "https://placehold.co/200x200?text=No+Image";
 
 const handleImageUpload = (event) => {
@@ -502,7 +496,6 @@ const handleImageUpload = (event) => {
     reader.readAsDataURL(file);
 };
 
-// ---------------- FORMAT DATES ----------------
 const formatDate = (dateString) => {
     if (!dateString) return "Not available";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -514,7 +507,6 @@ const formatDate = (dateString) => {
     });
 };
 
-// ---------------- UI MESSAGES ----------------
 const message = ref({
     text: "",
     type: "",
@@ -528,7 +520,6 @@ const showMessage = (text, type) => {
     setTimeout(() => (message.value.visible = false), 5000);
 };
 
-// ---------------- SAVE CHANGES (FIXED) ----------------
 const saveChanges = async () => {
     try {
         isLoading.value = true;
@@ -536,7 +527,6 @@ const saveChanges = async () => {
 
         let imageUrl = studentData.value.personal?.profile_picture;
 
-        // ---------- Upload to BUCKET "avatars" ----------
         if (selectedFile.value) {
             const ext = selectedFile.value.name.split(".").pop();
             const fileName = `${user.id}.${ext}`;
@@ -555,7 +545,6 @@ const saveChanges = async () => {
                     .update(fileName, selectedFile.value);
                 }
 
-    // 3) If does NOT exist → use UPLOAD (create new file)
             else {
                 uploadResult = await supabase.storage
                     .from("avatars")
@@ -564,7 +553,6 @@ const saveChanges = async () => {
 
             if (uploadResult.error) throw uploadResult.error;
 
-    // 4) ALWAYS refresh URL (break browser cache)
             const { data: urlData } = supabase.storage
                 .from("avatars")
                 .getPublicUrl(fileName);
@@ -572,10 +560,6 @@ const saveChanges = async () => {
             imageUrl = `${urlData.publicUrl}?t=${Date.now()}`;
     }
 
-
-
-
-        // ---------- CLEAN COURSES ----------
         const formattedCourses = editData.value.taken_courses_string
             .split(",")
             .map((c) => c.trim())
@@ -584,7 +568,6 @@ const saveChanges = async () => {
 
         const uniqueCourses = [...new Set(formattedCourses)];
 
-        // ---------- CLEAN GENEDS ----------
         const formattedGeneds = editData.value.taken_geneds_string
             .split(",")
             .map((g) => g.trim().toUpperCase())
@@ -592,12 +575,10 @@ const saveChanges = async () => {
 
         let uniqueGeneds = [...new Set(formattedGeneds)];
 
-        // auto-add GG if international
         if (editData.value.is_international && !uniqueGeneds.includes("GG")) {
             uniqueGeneds.push("GG");
         }
 
-        // ---------- UPDATE PERSONAL ----------
         await axios.put(`${DATA_URL}/students/update-personal/${user.id}`, {
             full_name: editData.value.full_name,
             age: editData.value.age,
@@ -605,7 +586,6 @@ const saveChanges = async () => {
             profile_picture: imageUrl,
         });
 
-        // ---------- UPDATE ACADEMIC ----------
         await axios.put(`${DATA_URL}/students/update-academic/${user.id}`, {
             current_semester: editData.value.current_semester,
             taken_courses: uniqueCourses,
@@ -627,7 +607,6 @@ const saveChanges = async () => {
     }
 };
 
-// ---------------- LIVE STRING → ARRAY SYNC ----------------
 watch(
     () => editData.value.taken_courses_string,
     (newVal) => {
@@ -648,7 +627,6 @@ watch(
     }
 );
 
-// ---------------- FETCH DATA ----------------
 const fetchAccountDetails = async () => {
     try {
         isLoading.value = true;
@@ -674,7 +652,6 @@ const fetchAccountDetails = async () => {
     }
 };
 
-// ---------------- LOGOUT ----------------
 const handleLogout = async () => {
     try {
         await supabase.auth.signOut();
@@ -684,7 +661,6 @@ const handleLogout = async () => {
     }
 };
 
-// ---------------- MOUNT ----------------
 onMounted(() => {
     requestAnimationFrame(() => (showCard.value = true));
     fetchAccountDetails();
