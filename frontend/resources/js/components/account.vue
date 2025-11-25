@@ -540,18 +540,39 @@ const saveChanges = async () => {
             const ext = selectedFile.value.name.split(".").pop();
             const fileName = `${user.id}.${ext}`;
 
-            const { error: uploadError } = await supabase.storage
+            const { data: existingFiles, error: listError } = await supabase.storage
                 .from("avatars")
-                .upload(fileName, selectedFile.value, { upsert: true });
+                .list("", { search: fileName });
 
-            if (uploadError) throw uploadError;
+            const fileExists = existingFiles?.some(f => f.name === fileName);
 
+            let uploadResult;
+            
+            if (fileExists) {
+                uploadResult = await supabase.storage
+                    .from("avatars")
+                    .update(fileName, selectedFile.value);
+                }
+
+    // 3) If does NOT exist → use UPLOAD (create new file)
+            else {
+                uploadResult = await supabase.storage
+                    .from("avatars")
+                    .upload(fileName, selectedFile.value);
+                }
+
+            if (uploadResult.error) throw uploadResult.error;
+
+    // 4) ALWAYS refresh URL (break browser cache)
             const { data: urlData } = supabase.storage
                 .from("avatars")
                 .getPublicUrl(fileName);
 
-            imageUrl = urlData.publicUrl;
-        }
+            imageUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+    }
+
+
+
 
         // ---------- CLEAN COURSES ----------
         const formattedCourses = editData.value.taken_courses_string
