@@ -2,14 +2,12 @@
     <div
         class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white"
     >
-    
         <header
             class="flex justify-between items-center max-w-7xl mx-auto px-8 py-6"
         >
             <h1 class="text-2xl font-bold tracking-tight">AI Scheduler</h1>
-            
-            <div class="flex space-x-4">
 
+            <div class="flex space-x-4">
                 <button
                     @click="goTo('/signup')"
                     class="border-2 border-white bg-white text-[#800020] font-semibold px-5 py-2 rounded-xl hover:bg-transparent hover:text-white transition-all duration-300"
@@ -54,21 +52,14 @@
                 academic advisors.
             </p>
 
-            <div class="mt-8 flex justify-center gap-4">
+            <div class="mt-8 flex justify-center">
                 <button
-                    @click="goTo('/chat')"
-                    class="bg-[#800020] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#880808] transition fade-up"
+                    @click="handleGetStarted"
+                    class="bg-[#800020] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#880808] transition-all duration-300 hover:scale-105 fade-up shadow-lg"
                     :class="{ in: showHero }"
                     style="transition-delay: 360ms"
                 >
                     Get Started →
-                </button>
-                <button
-                    class="bg-transparent border border-white text-white font-semibold px-6 py-3 rounded-xl hover:bg-white hover:text-[#800020] transition-all duration-300 fade-up"
-                    :class="{ in: showHero }"
-                    style="transition-delay: 420ms"
-                >
-                    Learn More
                 </button>
             </div>
         </main>
@@ -79,7 +70,7 @@
             <div
                 v-for="(feature, i) in features"
                 :key="feature.title"
-                class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 fade-up"
+                class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 fade-up hover:scale-105"
                 :class="{ in: showFeatures }"
                 :style="{ transitionDelay: `${120 * i}ms` }"
             >
@@ -101,12 +92,10 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { useRouter } from 'vue-router'; 
-const router = useRouter();
+import { useRouter } from "vue-router";
+import { supabase } from "../supabase";
 
-const goTo = (path) => {
-    router.push(path);
-};
+const router = useRouter();
 
 const showHero = ref(false);
 const showFeatures = ref(false);
@@ -129,6 +118,31 @@ const features = [
     },
 ];
 
+const goTo = (path) => {
+    router.push(path);
+};
+
+const handleGetStarted = async () => {
+    try {
+        // Check if user is logged in
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+            // User is logged in, go to chat
+            router.push("/chat");
+        } else {
+            // User is not logged in, go to login
+            router.push("/login");
+        }
+    } catch (error) {
+        console.error("Error checking auth status:", error);
+        // If there's an error, default to login page
+        router.push("/login");
+    }
+};
+
 onMounted(() => {
     requestAnimationFrame(() => {
         showHero.value = true;
@@ -138,7 +152,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
 .fade-up {
     opacity: 0;
     transform: translateY(16px);

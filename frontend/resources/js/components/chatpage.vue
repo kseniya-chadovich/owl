@@ -1,94 +1,219 @@
 <template>
-    
-    <button
-        @click="sidebarOpen = true"
-        class="fixed top-4 left-4 z-50 bg-white border border-zinc-300 p-2 rounded-lg shadow hover:bg-zinc-100"
+    <header
+        class="w-full border-b border-white/20 bg-white/80 backdrop-blur-xl shadow-sm"
     >
-
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 text-[#800020]"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <div
+            class="flex justify-between items-center max-w-7xl mx-auto px-6 py-4"
         >
-            <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16"
-            />
-        </svg>
-    </button>
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 bg-gradient-to-br from-[#800020] to-[#a83232] rounded-xl flex items-center justify-center shadow-lg"
+                >
+                    <span class="text-white font-bold text-lg">AI</span>
+                </div>
+                <h1
+                    class="text-xl font-bold bg-gradient-to-r from-[#800020] to-[#a83232] bg-clip-text text-transparent"
+                >
+                    Scheduler
+                </h1>
+            </div>
+
+            <button
+                @click="sidebarOpen = true"
+                class="p-2 rounded-xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-slate-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"
+                    />
+                </svg>
+            </button>
+        </div>
+    </header>
 
     <div
         v-if="sidebarOpen"
         @click="sidebarOpen = false"
-        class="fixed inset-0 bg-black bg-opacity-40 z-40"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300"
     ></div>
 
     <div
-        class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300"
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed top-0 right-0 h-full w-80 bg-white/95 backdrop-blur-xl shadow-2xl z-50 transform transition-transform duration-500 ease-out"
+        :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full'"
     >
-        <div class="p-6 border-b border-zinc-200">
-            <h2 class="text-xl font-bold text-[#800020]">Menu</h2>
+        <div class="p-6 border-b border-slate-100">
+            <div class="flex items-center justify-between">
+                <h2
+                    class="text-xl font-bold bg-gradient-to-r from-[#800020] to-[#a83232] bg-clip-text text-transparent"
+                >
+                    Navigation
+                </h2>
+                <button
+                    @click="sidebarOpen = false"
+                    class="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 text-slate-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        <div class="p-4 flex flex-col gap-3">
+        <div class="p-6 space-y-3">
             <button
-                class="w-full bg-[#800020] text-white px-4 py-3 rounded-xl hover:bg-[#800020]/80 transition"
-                @click="
-                    $router.push('/account');
-                    sidebarOpen = false;
-                "
+                @click="navigateTo('/account')"
+                class="w-full flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 text-slate-700 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] hover:border-[#800020]/20"
             >
-                Account Information
+                <div class="p-2 bg-[#800020]/10 rounded-xl">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 text-[#800020]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                    </svg>
+                </div>
+                <span class="font-semibold">Account Information</span>
             </button>
 
             <button
-                class="w-full bg-zinc-200 text-[#800020] px-4 py-3 rounded-xl hover:bg-zinc-300 transition"
-                @click="
-                    $router.push('/schedule');
-                    sidebarOpen = false;
-                "
+                @click="navigateTo('/schedule')"
+                class="w-full flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 text-slate-700 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] hover:border-[#800020]/20"
             >
-                Current Schedule
+                <div class="p-2 bg-[#800020]/10 rounded-xl">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 text-[#800020]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                        />
+                    </svg>
+                </div>
+                <span class="font-semibold">Current Schedule</span>
             </button>
+
+            <div class="pt-6 border-t border-slate-100">
+                <button
+                    @click="handleLogout"
+                    class="w-full flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all duration-300"
+                >
+                    <div class="p-2 bg-slate-200 rounded-xl">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                            />
+                        </svg>
+                    </div>
+                    <span class="font-semibold">Logout</span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="min-h-screen bg-white flex flex-col items-center py-16 px-4">
-
-        <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-[#800020]">
+    <div
+        class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 flex flex-col items-center pt-4 pb-8 px-4"
+    >
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-3">
                 Chat with Your Scheduling Assistant
             </h1>
-            <p class="text-zinc-600 mt-3 text-lg">
-                Describe your preferences in natural language
+            <p class="text-slate-500 text-base max-w-1xl mx-auto">
+                Describe your preferences in natural language and let AI build
+                your perfect semester schedule
             </p>
         </div>
 
-        <div v-if="isInitializing" class="py-20 text-center text-zinc-500">
-            <div
-                class="animate-spin h-10 w-10 border-4 border-[#800020] border-t-transparent rounded-full mx-auto"
-            ></div>
-            <p class="mt-4 text-lg">Loading your chat session…</p>
+        <div v-if="isInitializing" class="py-12 text-center text-slate-600">
+            <div class="flex justify-center mb-3">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-[#800020] to-[#a83232] rounded-xl flex items-center justify-center"
+                >
+                    <div
+                        class="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"
+                    ></div>
+                </div>
+            </div>
+            <p class="text-base font-medium">Loading your chat session...</p>
         </div>
 
         <div
             v-else
-            class="w-full max-w-3xl bg-white border border-zinc-200 rounded-3xl shadow-sm flex flex-col overflow-hidden"
+            class="w-full max-w-6xl bg-white rounded-2xl shadow-sm flex flex-col overflow-hidden"
+            style="height: 70vh; margin-top: 0"
         >
-
             <div
                 v-if="errorMessage"
-                class="mx-4 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                class="mx-4 mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center gap-2"
             >
+                <div
+                    class="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-3 w-3 text-red-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </div>
                 {{ errorMessage }}
             </div>
 
-            <div class="flex-1 p-6 space-y-6 overflow-y-auto">
+            <div
+                ref="messagesContainer"
+                class="flex-1 p-5 space-y-4 overflow-y-auto"
+                style="max-height: calc(75vh - 160px)"
+            >
                 <div
                     v-for="message in messages"
                     :key="message.id"
@@ -97,64 +222,66 @@
                 >
                     <div
                         v-if="message.role === 'assistant'"
-                        class="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-[#800020] font-semibold shrink-0"
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#800020] to-[#a83232] text-white font-semibold shrink-0 shadow-sm text-sm"
                     >
-                        🧠
+                        AI
                     </div>
+
                     <div
                         v-else
-                        class="flex h-10 w-10 items-center justify-center rounded-full border border-[#800020]/30 text-[#800020] shrink-0 order-last"
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700 font-semibold shrink-0 shadow-sm order-last text-sm"
                     >
-                        👤
+                        You
                     </div>
 
                     <div
                         v-if="!message.schedules"
-                        class="max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed"
+                        class="max-w-[80%] whitespace-pre-wrap rounded-xl px-4 py-3 leading-relaxed shadow-sm"
                         :class="
                             message.role === 'assistant'
-                                ? 'bg-zinc-100 text-zinc-800 rounded-tl-none'
-                                : 'bg-[#800020] text-white rounded-tr-none'
+                                ? 'bg-white text-slate-800 rounded-tl-none text-sm'
+                                : 'bg-gradient-to-r from-[#800020] to-[#a83232] text-white rounded-tr-none text-sm'
                         "
                     >
-                        {{ message.text }}
+                        <p class="font-medium">{{ message.text }}</p>
 
                         <div
                             v-if="message.confirmOptions"
-                            class="flex gap-3 mt-3"
+                            class="flex gap-2 mt-3"
                         >
                             <button
                                 v-for="opt in message.confirmOptions"
                                 :key="opt"
                                 @click="handleConfirmOption(opt)"
-                                class="px-4 py-2 text-sm rounded-lg border border-zinc-300 hover:bg-zinc-100 transition"
+                                class="px-3 py-2 text-sm rounded-lg bg-white text-slate-700 hover:bg-slate-50 transition-all duration-200 font-medium shadow-sm"
                             >
                                 {{ opt }}
                             </button>
                         </div>
                     </div>
 
-                    <div v-else class="flex flex-col gap-4 max-w-[80%]">
+                    <div v-else class="flex flex-col gap-3 max-w-[60%] w-full">
                         <div
                             v-for="(schedule, index) in message.schedules"
                             :key="index"
                             @click="handleSelectSchedule(index, message)"
-                            class="border rounded-2xl p-4 transition cursor-pointer relative bg-white/90 backdrop-blur-sm"
+                            class="rounded-xl p-4 transition-all duration-300 cursor-pointer bg-white hover:shadow-md relative"
                             :class="[
                                 selectedScheduleIndex === index &&
                                 message.id === selectedMessageId
-                                    ? 'border-[#800020] shadow-[0_0_0_1px_rgba(128,0,32,0.3)] bg-[#800020]/5'
-                                    : 'border-zinc-200 hover:bg-zinc-50 hover:shadow-sm',
+                                    ? 'ring-2 ring-[#800020] ring-opacity-30 bg-[#800020]/5'
+                                    : 'shadow-sm',
                             ]"
                         >
-
                             <div class="flex justify-between items-center mb-3">
                                 <div class="flex items-center gap-2">
-                                    <h3 class="font-semibold text-[#800020]">
+                                    <h3
+                                        class="font-bold text-slate-800 text-sm"
+                                    >
                                         Schedule {{ index + 1 }}
                                     </h3>
                                     <span
-                                        class="inline-flex items-center rounded-full bg-[#800020]/10 text-[#800020] text-xs px-2 py-0.5"
+                                        class="inline-flex items-center rounded-full bg-[#800020]/10 text-[#800020] text-xs px-2 py-1 font-medium"
                                     >
                                         {{ schedule.courses.length }} courses
                                     </span>
@@ -165,177 +292,164 @@
                                         selectedScheduleIndex === index &&
                                         message.id === selectedMessageId
                                     "
-                                    class="inline-flex items-center text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full"
+                                    class="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full"
                                 >
-                                    ✅ Selected
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-3 w-3 mr-1"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M5 13l4 4L19 7"
+                                        />
+                                    </svg>
+                                    Selected
                                 </span>
                             </div>
-                            
-                            <div class="mt-1 overflow-x-auto">
-                                <table
-                                    class="min-w-full text-xs sm:text-sm border-separate border-spacing-y-1"
+
+                            <div class="space-y-2">
+                                <div
+                                    v-for="course in schedule.courses"
+                                    :key="course.course"
+                                    class="flex items-center justify-between p-2 bg-slate-50 rounded-lg"
                                 >
-                                    <thead>
-                                        <tr class="text-zinc-500">
-                                            <th
-                                                class="text-left font-medium pr-3 pb-1"
-                                            >
-                                                Course
-                                            </th>
-                                            <th
-                                                class="text-left font-medium pr-3 pb-1 hidden sm:table-cell"
-                                            >
-                                                Time
-                                            </th>
-                                            <th
-                                                class="text-left font-medium pr-3 pb-1"
-                                            >
-                                                Credits
-                                            </th>
-                                            <th
-                                                class="text-left font-medium pr-3 pb-1 hidden md:table-cell"
-                                            >
-                                                Type
-                                            </th>
-                                            <th
-                                                class="text-left font-medium pb-1 hidden lg:table-cell"
-                                            >
-                                                Details
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr
-                                            v-for="course in schedule.courses"
-                                            :key="course.course"
-                                            class="bg-zinc-50/80 hover:bg-zinc-100 transition-colors"
+                                    <div class="flex-1 min-w-0">
+                                        <div
+                                            class="flex items-center gap-2 mb-1"
                                         >
-
-                                            <td
-                                                class="px-3 py-2 rounded-l-xl align-top"
+                                            <h4
+                                                class="font-semibold text-slate-800 text-sm truncate"
                                             >
-                                                <div
-                                                    class="font-semibold text-zinc-900"
-                                                >
-                                                    {{ course.course }}
-                                                </div>
-
-                                                <div
-                                                    class="mt-1 text-[11px] text-zinc-500 sm:hidden space-y-0.5"
-                                                >
-                                                    <div>
-                                                        <span
-                                                            class="font-medium"
-                                                            >Time:</span
-                                                        >
-                                                        {{
-                                                            course.day_time ||
-                                                            "TBD"
-                                                        }}
-                                                    </div>
-                                                    <div
-                                                        v-if="course.instructor"
-                                                    >
-                                                        <span
-                                                            class="font-medium"
-                                                            >Prof:</span
-                                                        >
-                                                        {{ course.instructor }}
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td
-                                                class="px-3 py-2 align-top text-zinc-700 hidden sm:table-cell"
+                                                {{ course.course }}
+                                            </h4>
+                                            <div
+                                                class="flex gap-1 flex-shrink-0"
                                             >
-                                                {{ course.day_time || "TBD" }}
-                                            </td>
-
-                                            <td class="px-3 py-2 align-top">
                                                 <span
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-800 text-[11px]"
+                                                    v-if="course.category"
+                                                    class="inline-flex items-center px-2 py-1 rounded-full bg-[#800020]/10 text-[#800020] text-xs font-medium"
+                                                    >{{ course.category }}</span
                                                 >
-                                                    {{ course.credits }} cr
-                                                </span>
-                                            </td>
-
-                                            <td
-                                                class="px-3 py-2 align-top hidden md:table-cell"
-                                            >
-                                                <div
-                                                    class="flex flex-wrap gap-1"
-                                                >
-                                                    <span
-                                                        v-if="course.category"
-                                                        class="inline-flex items-center px-2 py-0.5 rounded-full bg-[#800020]/10 text-[#800020] text-[11px]"
-                                                    >
-                                                        {{ course.category }}
-                                                    </span>
-                                                    <span
-                                                        v-if="course.gened_type"
-                                                        class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px]"
-                                                    >
-                                                        GenEd:
-                                                        {{ course.gened_type }}
-                                                    </span>
-                                                </div>
-                                            </td>
-
-                                            <td
-                                                class="px-3 py-2 align-top text-zinc-700 hidden lg:table-cell rounded-r-xl"
-                                            >
-                                                <span v-if="course.instructor"
-                                                    >Prof:
-                                                    {{
-                                                        course.instructor
+                                                <span
+                                                    v-if="course.gened_type"
+                                                    class="inline-flex items-center px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-medium"
+                                                    >{{
+                                                        course.gened_type
                                                     }}</span
                                                 >
-                                                <span
-                                                    v-else
-                                                    class="text-zinc-400 italic"
-                                                    >Instructor TBA</span
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            class="flex items-center gap-3 text-sm text-slate-600"
+                                        >
+                                            <span
+                                                class="flex items-center gap-1"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-3 w-3"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
                                                 >
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                                {{ course.day_time || "TBD" }}
+                                            </span>
+                                            <span
+                                                class="flex items-center gap-1"
+                                                v-if="course.instructor"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-3 w-3"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                    />
+                                                </svg>
+                                                {{ course.instructor }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex items-center gap-2 ml-3 flex-shrink-0"
+                                    >
+                                        <span
+                                            class="bg-white text-slate-700 px-2 py-1 rounded-full text-sm font-semibold shadow-sm"
+                                            >{{ course.credits }} cr</span
+                                        >
+                                    </div>
+                                </div>
                             </div>
 
                             <div
-                                class="mt-3 flex justify-between items-center text-xs sm:text-sm text-zinc-600"
+                                class="mt-3 flex justify-between items-center text-sm text-slate-600"
                             >
-                                <p>
-                                    <span class="font-medium text-zinc-800"
-                                        >Total credits:</span
-                                    >
-                                    {{ schedule.total_credits ?? "n/a" }}
+                                <p class="font-semibold text-slate-800">
+                                    Total:
+                                    {{
+                                        schedule.total_credits ?? "n/a"
+                                    }}
+                                    credits
                                 </p>
-                                <p class="hidden sm:block text-zinc-500">
-                                    Click to select this schedule.
+                                <p class="text-slate-500 text-sm">
+                                    Click to select
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div
-                    v-if="isLoading"
-                    class="flex items-start gap-3 text-sm text-zinc-500"
-                >
+                <div v-if="isLoading" class="flex items-start gap-3">
                     <div
-                        class="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-[#800020] font-semibold"
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#800020] to-[#a83232] text-white font-semibold shadow-sm text-sm"
                     >
-                        🧠
+                        AI
                     </div>
                     <div
-                        class="rounded-2xl rounded-tl-none bg-zinc-100 px-4 py-3"
+                        class="bg-white rounded-xl rounded-tl-none px-4 py-3 shadow-sm"
                     >
-                        Thinking…
+                        <div class="flex items-center gap-2 text-slate-600">
+                            <div class="flex space-x-1">
+                                <div
+                                    class="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                                    style="animation-delay: 0.1s"
+                                ></div>
+                                <div
+                                    class="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                                    style="animation-delay: 0.2s"
+                                ></div>
+                                <div
+                                    class="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                                    style="animation-delay: 0.3s"
+                                ></div>
+                            </div>
+                            <span class="text-sm font-medium">Thinking...</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="border-t border-zinc-200 bg-zinc-50 p-4">
+            <div class="bg-slate-50/80 p-4">
                 <div class="flex items-end gap-3">
                     <textarea
                         ref="textareaRef"
@@ -344,23 +458,24 @@
                         @input="autoResize"
                         @keydown.enter.exact.prevent="sendMessage"
                         rows="1"
-                        class="flex-1 resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#800020]/40"
+                        class="flex-1 resize-none rounded-xl bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 text-slate-700 placeholder-slate-500 font-medium transition-all duration-200 text-sm shadow-sm"
                         :disabled="isLoading"
+                        style="max-height: 100px; min-height: 48px"
                     ></textarea>
 
                     <button
                         @click="resetConversation"
                         :disabled="isLoading"
-                        class="bg-zinc-200 hover:bg-zinc-300 text-[#800020] p-3 rounded-xl transition flex items-center justify-center"
+                        class="bg-white hover:bg-slate-50 text-slate-700 p-3 rounded-xl transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md flex-shrink-0"
                         title="Reset session"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
-                            stroke-width="2"
+                            stroke-width="1.5"
                             stroke="currentColor"
-                            class="w-5 h-5"
+                            class="w-4 h-4"
                         >
                             <path
                                 stroke-linecap="round"
@@ -373,11 +488,11 @@
                     <button
                         @click="sendMessage"
                         :disabled="isLoading || !draftMessage.trim()"
-                        class="bg-[#800020] hover:bg-[#800020]/80 text-white p-3 rounded-xl transition flex items-center justify-center"
+                        class="bg-gradient-to-r from-[#800020] to-[#a83232] hover:from-[#700018] hover:to-[#982b2b] text-white p-3 rounded-xl transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md font-medium flex-shrink-0"
                         :class="
                             isLoading || !draftMessage.trim()
                                 ? 'opacity-50 cursor-not-allowed'
-                                : ''
+                                : 'hover:scale-105'
                         "
                         title="Send"
                     >
@@ -385,14 +500,14 @@
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
-                            stroke-width="2"
+                            stroke-width="1.5"
                             stroke="currentColor"
-                            class="w-5 h-5"
+                            class="w-4 h-4"
                         >
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                d="M3 10h11M9 21l12-9L9 3v7H3v4h6v7z"
+                                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
                             />
                         </svg>
                     </button>
@@ -402,7 +517,7 @@
                     <button
                         v-for="suggestion in suggestions"
                         :key="suggestion"
-                        class="text-sm border border-zinc-300 px-3 py-2 rounded-full text-zinc-700 hover:bg-zinc-100 transition"
+                        class="text-sm bg-white px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-all duration-200 font-medium shadow-sm"
                         @click="applySuggestion(suggestion)"
                         :disabled="isLoading"
                     >
@@ -415,10 +530,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick, watch } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 import { supabase } from "../supabase";
 
+const router = useRouter();
 const AI_URL = "https://scheduling-assistant-zl2c.onrender.com";
 const DATA_URL = "https://supabase-kqbi.onrender.com";
 
@@ -427,27 +544,52 @@ const messages = ref([]);
 const draftMessage = ref("");
 const isLoading = ref(false);
 const sidebarOpen = ref(false);
-
+const messagesContainer = ref(null);
 const isInitializing = ref(true);
-
 const selectedScheduleIndex = ref(null);
 const selectedMessageId = ref(null);
-
 const confirmMessageId = ref(null);
-
 const suggestions = [
     "No morning classes",
     "Only 12 credits",
     "I prefer T/Th classes",
     "Avoid online courses",
 ];
+const textareaRef = ref(null);
 
 let messageCounter = 0;
 const newId = () => `msg-${messageCounter++}`;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const stripSection = (courseName) => {
-    return courseName.replace(/\s*\(\d+\)\s*$/, "").trim();
+const stripSection = (courseName) =>
+    courseName.replace(/\s*\(\d+\)\s*$/, "").trim();
+
+const scrollToBottom = async () => {
+    await nextTick();
+    if (messagesContainer.value)
+        messagesContainer.value.scrollTop =
+            messagesContainer.value.scrollHeight;
+};
+
+watch(() => messages.value.length, scrollToBottom, { flush: "post" });
+watch(
+    () => isLoading.value,
+    () => !isLoading.value && scrollToBottom()
+);
+
+const navigateTo = (route) => {
+    sidebarOpen.value = false;
+    router.push(route);
+};
+
+const handleLogout = async () => {
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        router.push("/login");
+    } catch (err) {
+        console.error("Logout error:", err);
+    }
 };
 
 const loadUser = async () => {
@@ -462,7 +604,6 @@ const loadUser = async () => {
     const resp = await axios.get(
         `${DATA_URL}/students/conversation/${user.value.id}`
     );
-
     const stored = resp.data?.conversation || [];
 
     if (!stored.length) {
@@ -470,10 +611,11 @@ const loadUser = async () => {
             {
                 id: newId(),
                 role: "assistant",
-                text: "Hi! I'm your scheduling assistant.",
+                text: "Hi! I'm your scheduling assistant. I can help you build the perfect semester schedule based on your preferences and academic requirements.",
             },
         ];
         isInitializing.value = false;
+        await scrollToBottom();
         return;
     }
 
@@ -490,32 +632,26 @@ const loadUser = async () => {
             }
         } catch {}
 
-        if (t.startsWith("User:")) {
-            return {
-                id: newId(),
-                role: "user",
-                text: t.replace("User: ", ""),
-            };
-        }
-
+        if (t.startsWith("User:"))
+            return { id: newId(), role: "user", text: t.replace("User: ", "") };
         return { id: newId(), role: "assistant", text: t };
     });
 
     isInitializing.value = false;
+    await scrollToBottom();
 };
 
-onMounted(async () => {
-    await loadUser();
-});
+onMounted(loadUser);
 
 const saveConversation = async () => {
     if (!user.value) return;
-
-    const lines = messages.value.map((m) => {
-        if (m.schedules) return JSON.stringify({ schedules: m.schedules });
-        return m.role === "user" ? `User: ${m.text}` : m.text;
-    });
-
+    const lines = messages.value.map((m) =>
+        m.schedules
+            ? JSON.stringify({ schedules: m.schedules })
+            : m.role === "user"
+            ? `User: ${m.text}`
+            : m.text
+    );
     await axios.post(`${DATA_URL}/students/conversation`, {
         user_id: user.value.id,
         conversation: lines,
@@ -527,7 +663,6 @@ const sendMessage = async () => {
 
     const text = draftMessage.value;
     draftMessage.value = "";
-
     messages.value.push({ id: newId(), role: "user", text });
 
     if (confirmMessageId.value) {
@@ -581,13 +716,11 @@ const sendMessage = async () => {
 const handleSelectSchedule = (index, message) => {
     selectedScheduleIndex.value = index;
     selectedMessageId.value = message.id;
-
     const n = index + 1;
 
     if (!confirmMessageId.value) {
         const msgId = newId();
         confirmMessageId.value = msgId;
-
         messages.value.push({
             id: msgId,
             role: "assistant",
@@ -596,9 +729,8 @@ const handleSelectSchedule = (index, message) => {
         });
     } else {
         const msg = messages.value.find((m) => m.id === confirmMessageId.value);
-        if (msg) {
+        if (msg)
             msg.text = `You're looking at Schedule ${n}. Do you want to confirm it or add more requirements?`;
-        }
     }
 };
 
@@ -619,7 +751,6 @@ const handleConfirmOption = async (option) => {
                     }${c.instructor ? " | Prof: " + c.instructor : ""}`
             )
             .join("\n");
-
         messages.value.push({
             id: newId(),
             role: "user",
@@ -635,21 +766,16 @@ const handleConfirmOption = async (option) => {
             `${DATA_URL}/students/${user.value.id}`
         );
         const academic = academicResp.data.academic;
-
         const newCourses = selected.courses.map((c) => stripSection(c.course));
-
         const newGeneds = selected.courses
             .map((c) => c.gened_type)
             .filter((g) => g && g.length > 0);
-
         const updatedCourses = Array.from(
             new Set([...academic.taken_courses, ...newCourses])
         );
-
         const updatedGeneds = Array.from(
             new Set([...academic.taken_geneds, ...newGeneds])
         );
-
         const updatedSemester = Math.min(
             8,
             Number(academic.current_semester) + 1
@@ -665,17 +791,13 @@ const handleConfirmOption = async (option) => {
             },
         });
 
-        await axios.post(`${AI_URL}/reset`, {
-            user_id: user.value.id,
-        });
-
+        await axios.post(`${AI_URL}/reset`, { user_id: user.value.id });
         await axios.delete(
             `${DATA_URL}/students/conversation/${user.value.id}`
         );
 
         let countdown = 5;
         const countdownMsgId = newId();
-
         messages.value.push({
             id: countdownMsgId,
             role: "assistant",
@@ -685,7 +807,6 @@ const handleConfirmOption = async (option) => {
         while (countdown > 0) {
             await wait(1000);
             countdown--;
-
             const msg = messages.value.find((m) => m.id === countdownMsgId);
             if (msg)
                 msg.text = `Your schedule has been saved! 🎉\nResetting in ${countdown}…`;
@@ -698,11 +819,9 @@ const handleConfirmOption = async (option) => {
                 text: "Session reset! Let's plan your next semester. 📚",
             },
         ];
-
         confirmMessageId.value = null;
         selectedScheduleIndex.value = null;
         selectedMessageId.value = null;
-
         return;
     }
 
@@ -711,35 +830,27 @@ const handleConfirmOption = async (option) => {
         role: "user",
         text: "I want to add more requirements.",
     });
-
     messages.value.push({
         id: newId(),
         role: "assistant",
         text: "Sure! What would you like to adjust?",
     });
-
     confirmMessageId.value = null;
     await saveConversation();
 };
 
-const applySuggestion = (s) => {
-    draftMessage.value = s;
-};
-
-const textareaRef = ref(null);
+const applySuggestion = (s) => (draftMessage.value = s);
 const autoResize = () => {
     const el = textareaRef.value;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
+    el.style.height = Math.min(el.scrollHeight, 100) + "px";
 };
 
 const resetConversation = async () => {
     if (!user.value) return;
-
     await axios.post(`${AI_URL}/reset`, { user_id: user.value.id });
     await axios.delete(`${DATA_URL}/students/conversation/${user.value.id}`);
-
     messages.value = [
         {
             id: newId(),
@@ -747,7 +858,6 @@ const resetConversation = async () => {
             text: "Session reset! How can I help you?",
         },
     ];
-
     confirmMessageId.value = null;
     selectedScheduleIndex.value = null;
     selectedMessageId.value = null;

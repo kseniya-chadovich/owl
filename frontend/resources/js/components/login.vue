@@ -1,54 +1,93 @@
 <template>
     <div
-        class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white flex flex-col"
+        class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 flex flex-col"
     >
+        <!-- NAVBAR -->
         <header
-            class="w-full border-b border-white/10 bg-black/10 backdrop-blur-sm"
+            class="w-full border-b border-white/20 bg-white/80 backdrop-blur-xl shadow-sm"
         >
             <div
-                class="flex justify-between items-center max-w-6xl mx-auto px-6 py-4"
+                class="flex justify-between items-center max-w-7xl mx-auto px-6 py-4"
             >
-                <h1 class="text-xl font-semibold tracking-tight">
-                    AI Scheduler
-                </h1>
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-[#800020] to-[#a83232] rounded-xl flex items-center justify-center shadow-lg"
+                    >
+                        <span class="text-white font-bold text-lg">AI</span>
+                    </div>
+                    <h1
+                        class="text-xl font-bold bg-gradient-to-r from-[#800020] to-[#a83232] bg-clip-text text-transparent"
+                    >
+                        Scheduler
+                    </h1>
+                </div>
 
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center gap-3">
                     <button
                         @click="$router.push('/')"
-                        class="hidden sm:inline-flex border border-white/70 text-white font-medium px-3 py-1.5 rounded-lg text-sm hover:bg-white/10 transition"
+                        class="border border-slate-300 bg-white text-slate-700 px-4 py-2 rounded-xl hover:bg-slate-50 hover:border-slate-400 transition-all duration-300 font-medium text-sm"
                     >
                         ← Home
                     </button>
                     <button
                         @click="$router.push('/signup')"
-                        class="border border-white bg-white text-[#800020] font-medium px-4 py-1.5 rounded-lg text-sm hover:bg-transparent hover:text-white transition"
+                        class="bg-gradient-to-r from-[#800020] to-[#a83232] text-white px-4 py-2 rounded-xl hover:shadow-md transition-all duration-300 font-medium text-sm"
                     >
-                        Signup
+                        Sign Up
                     </button>
                 </div>
             </div>
         </header>
 
-        <main class="flex-1 flex items-center justify-center px-6 pb-14">
-            <div class="relative w-full max-w-md">
-                <div
-                    class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-white/40 via-white/5 to-transparent blur-2xl opacity-70"
-                ></div>
-
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+            <div class="w-full max-w-md" :class="{ 'fade-up in': isMounted }">
                 <transition name="fade-msg">
                     <div
                         v-if="message.visible"
                         :class="[
-                            'mb-4 flex items-center justify-between text-sm px-4 py-3 rounded-lg border shadow-md relative z-20 bg-white',
+                            'mb-6 flex items-center justify-between px-4 py-3 rounded-xl border shadow-sm text-sm',
                             message.type === 'success'
-                                ? 'border-emerald-500 text-emerald-700'
-                                : 'border-red-500 text-red-700',
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                : 'bg-red-50 border-red-200 text-red-700',
                         ]"
                     >
-                        <span>{{ message.text }}</span>
+                        <div class="flex items-center gap-3">
+                            <div
+                                :class="[
+                                    'w-6 h-6 rounded-full flex items-center justify-center',
+                                    message.type === 'success'
+                                        ? 'bg-emerald-100 text-emerald-600'
+                                        : 'bg-red-100 text-red-600',
+                                ]"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        v-if="message.type === 'success'"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 13l4 4L19 7"
+                                    />
+                                    <path
+                                        v-else
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </div>
+                            <span class="font-medium">{{ message.text }}</span>
+                        </div>
                         <button
                             @click="message.visible = false"
-                            class="ml-4 text-lg leading-none hover:scale-110 transition-transform"
+                            class="ml-4 text-lg leading-none hover:scale-110 transition-transform text-slate-500 hover:text-slate-700"
                         >
                             &times;
                         </button>
@@ -56,90 +95,111 @@
                 </transition>
 
                 <div
-                    :class="[
-                        'relative z-10 bg-white/90 text-black backdrop-blur-xl rounded-2xl border border-white/40 px-8 py-10 shadow-xl',
-                        'transform-gpu transition-all duration-700',
-                        showCard ? 'card-in' : 'card-init',
-                    ]"
+                    class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8"
+                    :class="{ 'card-animate': isMounted }"
                 >
-                    <h2 class="text-2xl font-bold mb-2 text-center text-black">
-                        Welcome back 👋
-                    </h2>
-                    <p class="text-sm text-neutral-700 mb-6 text-center">
-                        Log in to access your AI scheduling assistant.
-                    </p>
+                    <div class="text-center mb-8">
+                        <h1
+                            class="text-3xl font-bold text-slate-800 mb-3"
+                            :class="{ 'title-animate': isMounted }"
+                        >
+                            Welcome back 👋
+                        </h1>
+                        <p
+                            class="text-slate-600 text-base"
+                            :class="{ 'subtitle-animate': isMounted }"
+                        >
+                            Log in to access your AI scheduling assistant.
+                        </p>
+                    </div>
 
-                    <form @submit.prevent="handleLogin" class="space-y-5">
-
-                        <div class="relative">
+                    <form @submit.prevent="handleLogin" class="space-y-6">
+                        <div
+                            class="space-y-2"
+                            :class="{ 'form-field-animate': isMounted }"
+                            style="animation-delay: 0.2s"
+                        >
+                            <label
+                                for="email"
+                                class="text-sm font-medium text-slate-700"
+                            >
+                                Email Address
+                            </label>
                             <input
                                 type="email"
                                 id="email"
                                 v-model="email"
-                                @focus="emailFocused = true"
-                                @blur="emailFocused = false"
                                 required
-                                class="floating-input w-full px-4 py-2.5 rounded-lg bg-white border border-neutral-300 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#800020] transition"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200 input-animate"
+                                placeholder="Enter your email"
                             />
-                            <label
-                                for="email"
-                                class="floating-label"
-                                :class="{
-                                    'floating-label--active':
-                                        emailFocused || email,
-                                }"
-                            >
-                                Email Address
-                            </label>
                         </div>
 
-                        <div class="relative">
-                            <input
-                                :type="showPassword ? 'text' : 'password'"
-                                id="password"
-                                v-model="password"
-                                @focus="passwordFocused = true"
-                                @blur="passwordFocused = false"
-                                required
-                                class="floating-input w-full px-4 py-2.5 pr-10 rounded-lg bg-white border border-neutral-300 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#800020] transition"
-                            />
+                        <div
+                            class="space-y-2"
+                            :class="{ 'form-field-animate': isMounted }"
+                            style="animation-delay: 0.3s"
+                        >
                             <label
                                 for="password"
-                                class="floating-label"
-                                :class="{
-                                    'floating-label--active':
-                                        passwordFocused || password,
-                                }"
+                                class="text-sm font-medium text-slate-700"
                             >
                                 Password
                             </label>
+                            <div class="relative">
+                                <input
+                                    :type="showPassword ? 'text' : 'password'"
+                                    id="password"
+                                    v-model="password"
+                                    required
+                                    class="w-full px-4 py-3 pr-12 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200 input-animate"
+                                    placeholder="Enter your password"
+                                />
+                                <button
+                                    type="button"
+                                    @click="showPassword = !showPassword"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors text-lg"
+                                >
+                                    <span v-if="showPassword">🙈</span>
+                                    <span v-else>👁️</span>
+                                </button>
+                            </div>
+                        </div>
 
+                        <div
+                            :class="{ 'button-animate': isMounted }"
+                            style="animation-delay: 0.4s"
+                        >
                             <button
-                                type="button"
-                                @click="showPassword = !showPassword"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-900 text-lg"
+                                type="submit"
+                                class="w-full bg-gradient-to-r from-[#800020] to-[#a83232] text-white font-semibold py-3.5 rounded-xl hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed button-pulse"
+                                :disabled="isLoading"
                             >
-                                <span v-if="showPassword">🙈</span>
-                                <span v-else>👁️</span>
+                                <span
+                                    v-if="isLoading"
+                                    class="flex items-center justify-center gap-2"
+                                >
+                                    <div
+                                        class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                                    ></div>
+                                    Logging in...
+                                </span>
+                                <span v-else>Login</span>
                             </button>
                         </div>
 
-                        <button
-                            type="submit"
-                            class="w-full bg-[#880808] text-white font-semibold text-base py-2.5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-60"
-                            :disabled="isLoading"
+                        <p
+                            class="text-center text-slate-600 text-sm"
+                            :class="{ 'footer-animate': isMounted }"
+                            style="animation-delay: 0.5s"
                         >
-                            {{ isLoading ? "Logging in..." : "Login" }}
-                        </button>
-
-                        <p class="text-sm text-center text-neutral-800 mt-1">
-                            Don’t have an account?
+                            Don't have an account?
                             <button
                                 type="button"
                                 @click="$router.push('/signup')"
-                                class="font-medium text-[#800020] hover:text-[#550014] underline transition"
+                                class="font-medium text-[#800020] hover:text-[#a83232] transition-colors underline"
                             >
-                                Sign up
+                                Sign up here
                             </button>
                         </p>
                     </form>
@@ -159,10 +219,8 @@ const router = useRouter();
 const email = ref("");
 const password = ref("");
 const isLoading = ref(false);
-const showCard = ref(false);
-const emailFocused = ref(false);
-const passwordFocused = ref(false);
 const showPassword = ref(false);
+const isMounted = ref(false);
 
 const message = ref({
     text: "",
@@ -212,14 +270,13 @@ const handleLogin = async () => {
 };
 
 onMounted(() => {
-    requestAnimationFrame(() => {
-        showCard.value = true;
-    });
+    setTimeout(() => {
+        isMounted.value = true;
+    }, 100);
 });
 </script>
 
 <style scoped>
-
 .fade-msg-enter-active,
 .fade-msg-leave-active {
     transition: opacity 0.25s ease, transform 0.25s ease;
@@ -230,45 +287,148 @@ onMounted(() => {
     transform: translateY(-4px);
 }
 
-.card-init {
+.fade-up {
     opacity: 0;
-    transform: translateY(30px) scale(0.96);
+    transform: translateY(16px) scale(0.98);
     filter: blur(6px);
+    transition: opacity 800ms ease, transform 800ms ease, filter 800ms ease;
 }
-.card-in {
+.fade-up.in {
     opacity: 1;
     transform: translateY(0) scale(1);
     filter: blur(0);
-    transition: all 700ms ease;
 }
 
-.floating-input {
-    padding-top: 1.4rem;
-    padding-bottom: 0.9rem;
+.card-animate {
+    animation: cardSlideIn 0.8s ease-out;
 }
 
-.floating-input::placeholder {
-    color: rgba(75, 85, 99, 0.8);
-    opacity: 1;
+@keyframes cardSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
-.floating-label {
+.title-animate {
+    animation: titleSlideIn 0.6s ease-out 0.1s both;
+}
+
+@keyframes titleSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.subtitle-animate {
+    animation: subtitleFadeIn 0.6s ease-out 0.2s both;
+}
+
+@keyframes subtitleFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-field-animate {
+    animation: formFieldSlideIn 0.5s ease-out both;
+}
+
+@keyframes formFieldSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.input-animate {
+    transition: all 0.3s ease;
+}
+
+.input-animate:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(128, 0, 32, 0.1),
+        0 4px 6px -2px rgba(128, 0, 32, 0.05);
+}
+
+.button-animate {
+    animation: buttonSlideIn 0.5s ease-out 0.4s both;
+}
+
+@keyframes buttonSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Button hover animation */
+.button-pulse {
+    position: relative;
+    overflow: hidden;
+}
+
+.button-pulse::before {
+    content: "";
     position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.85rem;
-    color: rgba(55, 65, 81, 0.9); 
-    pointer-events: none;
-    transition: all 0.18s ease-out;
-    background: transparent;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s;
 }
 
-.floating-label--active {
-    top: 0.3rem;
-    transform: translateY(0);
-    font-size: 0.7rem;
-    letter-spacing: 0.02em;
-    opacity: 0.95;
+.button-pulse:hover::before {
+    left: 100%;
+}
+
+.footer-animate {
+    animation: footerFadeIn 0.5s ease-out 0.5s both;
+}
+
+@keyframes footerFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-field-animate:nth-child(1) {
+    animation-delay: 0.2s;
+}
+.form-field-animate:nth-child(2) {
+    animation-delay: 0.3s;
 }
 </style>

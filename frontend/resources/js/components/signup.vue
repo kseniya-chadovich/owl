@@ -1,29 +1,36 @@
 <template>
     <div
-        class="min-h-screen bg-gradient-to-b from-[#800020] to-[#880808] text-white flex flex-col"
+        class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 flex flex-col"
     >
-    
         <header
-            class="w-full border-b border-white/10 bg-black/10 backdrop-blur-sm"
+            class="w-full border-b border-white/20 bg-white/80 backdrop-blur-xl shadow-sm"
         >
             <div
-                class="flex justify-between items-center max-w-6xl mx-auto px-6 py-4"
+                class="flex justify-between items-center max-w-7xl mx-auto px-6 py-4"
             >
-                <h1 class="text-xl font-semibold tracking-tight">
-                    AI Scheduler
-                </h1>
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-[#800020] to-[#a83232] rounded-xl flex items-center justify-center shadow-lg"
+                    >
+                        <span class="text-white font-bold text-lg">AI</span>
+                    </div>
+                    <h1
+                        class="text-xl font-bold bg-gradient-to-r from-[#800020] to-[#a83232] bg-clip-text text-transparent"
+                    >
+                        Scheduler
+                    </h1>
+                </div>
 
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center gap-3">
                     <button
                         @click="$router.push('/')"
-                        class="hidden sm:inline-flex border border-white/70 text-white font-medium px-3 py-1.5 rounded-lg text-sm hover:bg-white/10 transition"
+                        class="border border-slate-300 bg-white text-slate-700 px-4 py-2 rounded-xl hover:bg-slate-50 hover:border-slate-400 transition-all duration-300 font-medium text-sm"
                     >
                         ← Home
                     </button>
-
                     <button
                         @click="$router.push('/login')"
-                        class="border border-white/80 bg-transparent text-white font-medium px-4 py-1.5 rounded-lg text-sm hover:bg-white hover:text-[#800020] transition"
+                        class="bg-gradient-to-r from-[#800020] to-[#a83232] text-white px-4 py-2 rounded-xl hover:shadow-md transition-all duration-300 font-medium text-sm"
                     >
                         Login
                     </button>
@@ -31,27 +38,55 @@
             </div>
         </header>
 
-        <main class="flex-1 flex items-start justify-center px-4 py-10">
-            <div class="relative w-full max-w-4xl">
-
-                <div
-                    class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-white/40 via-white/5 to-transparent blur-2xl opacity-70"
-                ></div>
-
+        <main class="flex-1 flex items-start justify-center px-4 py-8">
+            <div class="w-full max-w-4xl fade-up" :class="{ in: isMounted }">
                 <transition name="fade-msg">
                     <div
                         v-if="message.visible"
                         :class="[
-                            'mb-4 flex items-center justify-between text-sm px-4 py-3 rounded-lg border shadow-md relative z-20 bg-white',
+                            'mb-6 flex items-center justify-between px-4 py-3 rounded-xl border shadow-sm text-sm',
                             message.type === 'success'
-                                ? 'border-emerald-500 text-emerald-700'
-                                : 'border-red-500 text-red-700',
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                : 'bg-red-50 border-red-200 text-red-700',
                         ]"
                     >
-                        <span>{{ message.text }}</span>
+                        <div class="flex items-center gap-3">
+                            <div
+                                :class="[
+                                    'w-6 h-6 rounded-full flex items-center justify-center',
+                                    message.type === 'success'
+                                        ? 'bg-emerald-100 text-emerald-600'
+                                        : 'bg-red-100 text-red-600',
+                                ]"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        v-if="message.type === 'success'"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 13l4 4L19 7"
+                                    />
+                                    <path
+                                        v-else
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </div>
+                            <span class="font-medium">{{ message.text }}</span>
+                        </div>
                         <button
                             @click="message.visible = false"
-                            class="ml-4 text-lg leading-none hover:scale-110 transition-transform"
+                            class="ml-4 text-lg leading-none hover:scale-110 transition-transform text-slate-500 hover:text-slate-700"
                         >
                             &times;
                         </button>
@@ -59,169 +94,202 @@
                 </transition>
 
                 <div
-                    :class="[
-                        'relative z-10 bg-white/95 text-black backdrop-blur-xl rounded-2xl border border-white/40 px-8 py-10 shadow-xl',
-                        'transform-gpu transition-all duration-700',
-                        showCard ? 'card-in' : 'card-init',
-                    ]"
+                    class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 slide-up"
+                    :class="{ in: isMounted }"
                 >
-                    <h1 class="text-2xl font-bold mb-2 text-center">
-                        Student Signup / Profile Info
-                    </h1>
-                    <p class="text-sm text-neutral-700 mb-6 text-center">
-                        Create your account and tell us a bit about your
-                        academic background.
-                    </p>
+                    <div class="text-center mb-8">
+                        <h1
+                            class="text-3xl font-bold text-slate-800 mb-3 slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 0.1s"
+                        >
+                            Create Your Account 🎓
+                        </h1>
+                        <p
+                            class="text-slate-600 text-base slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 0.2s"
+                        >
+                            Sign up and tell us about your academic background
+                        </p>
+                    </div>
 
                     <form @submit.prevent="handleSubmit" class="space-y-6">
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 0.3s"
+                            >
                                 <label
                                     for="firstName"
-                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                    class="text-sm font-medium text-slate-700"
+                                    >First Name</label
                                 >
-                                    First Name
-                                </label>
                                 <input
                                     type="text"
                                     id="firstName"
                                     v-model="firstName"
                                     required
-                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
+                                    placeholder="Enter your first name"
                                 />
                             </div>
 
-                            <div>
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 0.4s"
+                            >
                                 <label
                                     for="lastName"
-                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                    class="text-sm font-medium text-slate-700"
+                                    >Last Name</label
                                 >
-                                    Last Name
-                                </label>
                                 <input
                                     type="text"
                                     id="lastName"
                                     v-model="lastName"
                                     required
-                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
+                                    placeholder="Enter your last name"
                                 />
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 0.5s"
+                            >
                                 <label
                                     for="email"
-                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                    class="text-sm font-medium text-slate-700"
+                                    >Email</label
                                 >
-                                    Email
-                                </label>
                                 <input
                                     type="email"
                                     id="email"
                                     v-model="email"
                                     required
-                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
+                                    placeholder="Enter your email"
                                 />
                             </div>
 
-                            <div>
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 0.6s"
+                            >
                                 <label
                                     for="birthday"
-                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                    class="text-sm font-medium text-slate-700"
+                                    >Date of Birth</label
                                 >
-                                    Date of Birth
-                                </label>
                                 <input
                                     type="date"
                                     id="birthday"
                                     v-model="birthday"
-                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
                                 />
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 0.7s"
+                            >
                                 <label
                                     for="password"
-                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                    class="text-sm font-medium text-slate-700"
+                                    >Password</label
                                 >
-                                    Password
-                                </label>
                                 <input
                                     type="password"
                                     id="password"
                                     v-model="password"
                                     required
-                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
+                                    placeholder="Create a password"
                                 />
                             </div>
 
-                            <div>
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 0.8s"
+                            >
                                 <label
                                     for="confirmPassword"
-                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                    class="text-sm font-medium text-slate-700"
+                                    >Confirm Password</label
                                 >
-                                    Confirm Password
-                                </label>
                                 <input
                                     type="password"
                                     id="confirmPassword"
                                     v-model="confirmPassword"
                                     required
-                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
+                                    placeholder="Confirm your password"
                                 />
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <p
-                                    class="text-sm font-semibold text-neutral-800 mb-1"
-                                >
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 0.9s"
+                            >
+                                <p class="text-sm font-medium text-slate-700">
                                     International Student
                                 </p>
                                 <div
-                                    class="flex items-center gap-4 text-sm text-neutral-800"
+                                    class="flex items-center gap-4 text-sm text-slate-700"
                                 >
                                     <label
-                                        class="inline-flex items-center gap-1"
+                                        class="inline-flex items-center gap-2"
                                     >
                                         <input
                                             type="radio"
                                             value="yes"
                                             v-model="international"
-                                            class="h-4 w-4"
+                                            class="h-4 w-4 text-[#800020] focus:ring-[#800020]"
                                         />
                                         <span>Yes</span>
                                     </label>
                                     <label
-                                        class="inline-flex items-center gap-1"
+                                        class="inline-flex items-center gap-2"
                                     >
                                         <input
                                             type="radio"
                                             value="no"
                                             v-model="international"
-                                            class="h-4 w-4"
+                                            class="h-4 w-4 text-[#800020] focus:ring-[#800020]"
                                         />
                                         <span>No</span>
                                     </label>
                                 </div>
                             </div>
 
-                            <div>
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 1s"
+                            >
                                 <label
                                     for="semester"
-                                    class="block text-sm font-semibold text-neutral-800 mb-1"
+                                    class="text-sm font-medium text-slate-700"
+                                    >Current Semester</label
                                 >
-                                    Current Semester
-                                </label>
                                 <select
                                     id="semester"
                                     v-model="semester"
-                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
                                 >
                                     <option disabled value="">
                                         Select semester
@@ -232,34 +300,36 @@
                                 </select>
                             </div>
 
-                            <div>
-                                <p
-                                    class="text-sm font-semibold text-neutral-800 mb-1"
-                                >
+                            <div
+                                class="space-y-2 slide-up"
+                                :class="{ in: isMounted }"
+                                style="animation-delay: 1.1s"
+                            >
+                                <p class="text-sm font-medium text-slate-700">
                                     Enrollment Type
                                 </p>
                                 <div
-                                    class="flex items-center gap-4 text-sm text-neutral-800"
+                                    class="flex items-center gap-4 text-sm text-slate-700"
                                 >
                                     <label
-                                        class="inline-flex items-center gap-1"
+                                        class="inline-flex items-center gap-2"
                                     >
                                         <input
                                             type="radio"
                                             value="full-time"
                                             v-model="enrollment"
-                                            class="h-4 w-4"
+                                            class="h-4 w-4 text-[#800020] focus:ring-[#800020]"
                                         />
                                         <span>Full-time</span>
                                     </label>
                                     <label
-                                        class="inline-flex items-center gap-1"
+                                        class="inline-flex items-center gap-2"
                                     >
                                         <input
                                             type="radio"
                                             value="part-time"
                                             v-model="enrollment"
-                                            class="h-4 w-4"
+                                            class="h-4 w-4 text-[#800020] focus:ring-[#800020]"
                                         />
                                         <span>Part-time</span>
                                     </label>
@@ -267,13 +337,15 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label
-                                class="block text-sm font-semibold text-neutral-800 mb-1"
+                        <div
+                            class="space-y-3 slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 1.2s"
+                        >
+                            <label class="text-sm font-medium text-slate-700"
+                                >Taken Courses</label
                             >
-                                Taken Courses
-                            </label>
-                            <p class="text-xs text-neutral-500 mb-2">
+                            <p class="text-xs text-slate-500">
                                 Tap to select all CIS / Math / Physics courses
                                 you have already taken.
                             </p>
@@ -296,28 +368,31 @@
                                 </div>
                             </div>
 
-                            <label
-                                for="otherCourse"
-                                class="block text-sm font-semibold text-neutral-800 mb-1 mt-3"
-                            >
-                                Other Course(s)
-                            </label>
-                            <input
-                                type="text"
-                                id="otherCourse"
-                                v-model="otherCourse"
-                                placeholder="Enter any additional courses (comma separated)"
-                                class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
-                            />
+                            <div class="space-y-2">
+                                <label
+                                    for="otherCourse"
+                                    class="text-sm font-medium text-slate-700"
+                                    >Other Course(s)</label
+                                >
+                                <input
+                                    type="text"
+                                    id="otherCourse"
+                                    v-model="otherCourse"
+                                    placeholder="Enter any additional courses (comma separated)"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label
-                                class="block text-sm font-semibold text-neutral-800 mb-1"
+                        <div
+                            class="space-y-3 slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 1.3s"
+                        >
+                            <label class="text-sm font-medium text-slate-700"
+                                >Taken GenEd Types</label
                             >
-                                Taken GenEd Types
-                            </label>
-                            <p class="text-xs text-neutral-500 mb-2">
+                            <p class="text-xs text-slate-500">
                                 GS will be auto-added for CS majors. GG is
                                 required for international students.
                             </p>
@@ -350,40 +425,52 @@
                                 </div>
                             </div>
 
-                            <label
-                                for="otherGened"
-                                class="block text-sm font-semibold text-neutral-800 mb-1 mt-3"
-                            >
-                                Other GenEd Type(s)
-                            </label>
-                            <input
-                                type="text"
-                                id="otherGened"
-                                v-model="otherGened"
-                                placeholder="Enter other GenEd types (comma separated)"
-                                class="w-full px-3 py-2 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#800020]"
-                            />
+                            <div class="space-y-2">
+                                <label
+                                    for="otherGened"
+                                    class="text-sm font-medium text-slate-700"
+                                    >Other GenEd Type(s)</label
+                                >
+                                <input
+                                    type="text"
+                                    id="otherGened"
+                                    v-model="otherGened"
+                                    placeholder="Enter other GenEd types (comma separated)"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
+                                />
+                            </div>
                         </div>
 
-                        <div>
+                        <div
+                            class="space-y-4 slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 1.4s"
+                        >
                             <button
                                 type="submit"
-                                class="w-full bg-[#880808] text-white font-semibold text-base py-2.5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-60"
+                                class="w-full bg-gradient-to-r from-[#800020] to-[#a83232] text-white font-semibold py-3.5 rounded-xl hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                 :disabled="isLoading"
                             >
-                                {{ isLoading ? "Submitting..." : "Submit" }}
+                                <span
+                                    v-if="isLoading"
+                                    class="flex items-center justify-center gap-2"
+                                >
+                                    <div
+                                        class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                                    ></div>
+                                    Creating Account...
+                                </span>
+                                <span v-else>Create Account</span>
                             </button>
 
-                            <p
-                                class="text-sm text-center text-neutral-800 mt-3"
-                            >
+                            <p class="text-center text-slate-600 text-sm">
                                 Already have an account?
                                 <button
                                     type="button"
                                     @click="$router.push('/login')"
-                                    class="font-medium text-[#800020] hover:text-[#550014] underline transition"
+                                    class="font-medium text-[#800020] hover:text-[#a83232] transition-colors underline"
                                 >
-                                    Log in
+                                    Log in here
                                 </button>
                             </p>
                         </div>
@@ -401,7 +488,7 @@ import { supabase } from "../supabase";
 
 const router = useRouter();
 const isLoading = ref(false);
-const showCard = ref(false);
+const isMounted = ref(false);
 
 const DATA_API_URL =
     import.meta.env.VITE_DATA_API_URL || "https://supabase-kqbi.onrender.com";
@@ -486,7 +573,6 @@ const geneds = ref([
 const selectedCourses = ref([]);
 const selectedGeneds = ref([]);
 
-
 const message = ref({
     text: "",
     type: "",
@@ -529,17 +615,13 @@ const handleSubmit = async () => {
     }
 
     try {
-
-        if (!selectedGeneds.value.includes("GS")) {
+        if (!selectedGeneds.value.includes("GS"))
             selectedGeneds.value.push("GS");
-        }
-
         if (
             international.value === "yes" &&
             !selectedGeneds.value.includes("GG")
-        ) {
+        )
             selectedGeneds.value.push("GG");
-        }
 
         const fullName = `${firstName.value} ${lastName.value}`.trim();
 
@@ -561,8 +643,6 @@ const handleSubmit = async () => {
             },
         });
 
-        console.log("signUp response:", data, error);
-
         if (error) throw error;
 
         const userId = data?.user?.id;
@@ -573,9 +653,7 @@ const handleSubmit = async () => {
         let age = null;
         if (birthday.value) {
             const birthYear = new Date(birthday.value).getFullYear();
-            if (!isNaN(birthYear)) {
-                age = nowYear - birthYear;
-            }
+            if (!isNaN(birthYear)) age = nowYear - birthYear;
         }
 
         const extraCourses = parseCommaList(otherCourse.value);
@@ -595,8 +673,6 @@ const handleSubmit = async () => {
             taken_geneds: [...selectedGeneds.value, ...extraGeneds],
         };
 
-        console.log("Sending to data API:", { personal, academic });
-
         const resp = await fetch(`${DATA_API_URL}/register-student`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -604,15 +680,12 @@ const handleSubmit = async () => {
         });
 
         const body = await resp.json().catch(() => ({}));
-        console.log("Data API response:", resp.status, body);
-
-        if (!resp.ok) {
+        if (!resp.ok)
             throw new Error(
                 body?.detail ||
                     body?.message ||
                     "Failed to save student profile to data API."
             );
-        }
 
         showMessage(
             "Account created and profile saved! Check your email to verify.",
@@ -620,7 +693,6 @@ const handleSubmit = async () => {
         );
         setTimeout(() => router.push("/confirmation"), 2500);
     } catch (err) {
-        console.error("Signup error:", err);
         showMessage(err.message || "Signup failed. Please try again.", "error");
     } finally {
         isLoading.value = false;
@@ -628,26 +700,13 @@ const handleSubmit = async () => {
 };
 
 onMounted(() => {
-    requestAnimationFrame(() => {
-        showCard.value = true;
-    });
+    setTimeout(() => {
+        isMounted.value = true;
+    }, 100);
 });
 </script>
 
 <style scoped>
-
-.card-init {
-    opacity: 0;
-    transform: translateY(30px) scale(0.96);
-    filter: blur(6px);
-}
-.card-in {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-    transition: all 700ms ease;
-}
-
 .fade-msg-enter-active,
 .fade-msg-leave-active {
     transition: opacity 0.25s ease, transform 0.25s ease;
@@ -656,6 +715,26 @@ onMounted(() => {
 .fade-msg-leave-to {
     opacity: 0;
     transform: translateY(-4px);
+}
+
+.fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-up.in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slide-up {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.slide-up.in {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .chip-container {
