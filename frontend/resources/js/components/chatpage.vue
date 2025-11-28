@@ -3,7 +3,7 @@
         class="w-full border-b border-white/20 bg-white/80 backdrop-blur-xl shadow-sm"
     >
         <div
-            class="flex justify-between items-center max-w-7xl mx-auto px-6 py-4"
+            class="flex justify-between items-center max-w-6xl mx-auto px-6 py-4"
         >
             <div class="flex items-center gap-3">
                 <div
@@ -161,8 +161,8 @@
                 Chat with Your Scheduling Assistant
             </h1>
             <p class="text-slate-500 text-base max-w-1xl mx-auto">
-                Describe your preferences in natural language and let AI build
-                your perfect semester schedule
+                Describe your preferences and let's build
+                your perfect semester schedule.
             </p>
         </div>
 

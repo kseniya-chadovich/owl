@@ -122,25 +122,8 @@ const goTo = (path) => {
     router.push(path);
 };
 
-const handleGetStarted = async () => {
-    try {
-        // Check if user is logged in
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-
-        if (user) {
-            // User is logged in, go to chat
-            router.push("/chat");
-        } else {
-            // User is not logged in, go to login
-            router.push("/login");
-        }
-    } catch (error) {
-        console.error("Error checking auth status:", error);
-        // If there's an error, default to login page
-        router.push("/login");
-    }
+const handleGetStarted = () => {
+    router.push("/signup");
 };
 
 onMounted(() => {

@@ -7,7 +7,7 @@
             class="w-full border-b border-white/20 bg-white/80 backdrop-blur-xl shadow-sm"
         >
             <div
-                class="flex justify-between items-center max-w-7xl mx-auto px-6 py-4"
+                class="flex justify-between items-center max-w-6xl mx-auto px-6 py-4"
             >
                 <div class="flex items-center gap-3">
                     <div
@@ -244,7 +244,7 @@
             </div>
 
             <!-- NO SCHEDULE STATE -->
-            <div v-else-if="!schedule" class="text-center py-12">
+            <div v-else-if="!schedule || !schedule.courses || schedule.courses.length === 0" class="text-center py-12">
                 <div class="mb-8">
                     <div class="text-5xl mb-4">📚</div>
                     <h3 class="text-xl font-semibold text-slate-800 mb-3">

@@ -7,7 +7,7 @@
             class="w-full border-b border-white/20 bg-white/80 backdrop-blur-xl shadow-sm"
         >
             <div
-                class="flex justify-between items-center max-w-7xl mx-auto px-6 py-4"
+                class="flex justify-between items-center max-w-6xl mx-auto px-6 py-4"
             >
                 <div class="flex items-center gap-3">
                     <div

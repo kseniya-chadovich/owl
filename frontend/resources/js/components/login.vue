@@ -209,6 +209,10 @@
     </div>
 </template>
 
+
+
+
+
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -232,203 +236,65 @@ const showMessage = (text, type) => {
     message.value.text = text;
     message.value.type = type;
     message.value.visible = true;
+
     setTimeout(() => {
         message.value.visible = false;
-    }, 5000);
+    }, 4000);
 };
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const handleLogin = async () => {
+    // Check empty fields
     if (!email.value || !password.value) {
-        showMessage("Please enter both email and password.", "error");
+        showMessage("Both fields are required.", "error");
+        return;
+    }
+
+    // Check **email format**
+    if (!emailPattern.test(email.value)) {
+        showMessage("Invalid email format.", "error");
         return;
     }
 
     isLoading.value = true;
 
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const result = await supabase.auth.signInWithPassword({
             email: email.value,
             password: password.value,
         });
 
-        if (error) throw error;
-
-        if (!data.user) {
-            showMessage("Login succeeded but no user returned.", "error");
-            isLoading.value = false;
-            return;
+        // Defensive: mock might return undefined
+        if (!result) {
+            throw new Error("Authentication failed.");
         }
 
-        showMessage("Login successful! Redirecting...", "success");
+        const { data, error } = result;
+
+        if (error) {
+            throw new Error(error.message || "Invalid login.");
+        }
+
+        if (!data?.user) {
+            throw new Error("Authentication failed: no user returned.");
+        }
+
+        showMessage("Login successful!", "success");
         router.push("/chat");
     } catch (err) {
         console.error("Login error", err);
-        showMessage(err.message || "Invalid email or password.", "error");
+        const readable =
+            err?.message && typeof err.message === "string"
+                ? err.message
+                : "Invalid email or password.";
+        showMessage(readable, "error");
     } finally {
         isLoading.value = false;
     }
 };
 
 onMounted(() => {
-    setTimeout(() => {
-        isMounted.value = true;
-    }, 100);
+    setTimeout(() => (isMounted.value = true), 100);
 });
 </script>
-
-<style scoped>
-.fade-msg-enter-active,
-.fade-msg-leave-active {
-    transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.fade-msg-enter-from,
-.fade-msg-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
-}
-
-.fade-up {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-    filter: blur(6px);
-    transition: opacity 800ms ease, transform 800ms ease, filter 800ms ease;
-}
-.fade-up.in {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-}
-
-.card-animate {
-    animation: cardSlideIn 0.8s ease-out;
-}
-
-@keyframes cardSlideIn {
-    0% {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.title-animate {
-    animation: titleSlideIn 0.6s ease-out 0.1s both;
-}
-
-@keyframes titleSlideIn {
-    0% {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.subtitle-animate {
-    animation: subtitleFadeIn 0.6s ease-out 0.2s both;
-}
-
-@keyframes subtitleFadeIn {
-    0% {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.form-field-animate {
-    animation: formFieldSlideIn 0.5s ease-out both;
-}
-
-@keyframes formFieldSlideIn {
-    0% {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.input-animate {
-    transition: all 0.3s ease;
-}
-
-.input-animate:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(128, 0, 32, 0.1),
-        0 4px 6px -2px rgba(128, 0, 32, 0.05);
-}
-
-.button-animate {
-    animation: buttonSlideIn 0.5s ease-out 0.4s both;
-}
-
-@keyframes buttonSlideIn {
-    0% {
-        opacity: 0;
-        transform: translateY(20px) scale(0.95);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Button hover animation */
-.button-pulse {
-    position: relative;
-    overflow: hidden;
-}
-
-.button-pulse::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
-    );
-    transition: left 0.5s;
-}
-
-.button-pulse:hover::before {
-    left: 100%;
-}
-
-.footer-animate {
-    animation: footerFadeIn 0.5s ease-out 0.5s both;
-}
-
-@keyframes footerFadeIn {
-    0% {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.form-field-animate:nth-child(1) {
-    animation-delay: 0.2s;
-}
-.form-field-animate:nth-child(2) {
-    animation-delay: 0.3s;
-}
-</style>
