@@ -333,7 +333,7 @@ def handle_request(
     message: str,
     student_data: Optional[Dict[str, Any]] = None,
     conversation_history: Optional[List[str]] = None,
-    num_schedules: int = 3,
+    num_schedules: int = 5,
     temperature: float = 0.2,
 ) -> Dict[str, Any]:
     """
