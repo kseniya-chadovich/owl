@@ -611,13 +611,25 @@ const loadUser = async () => {
             {
                 id: newId(),
                 role: "assistant",
-                text: "Hi! I'm your scheduling assistant. I can help you build the perfect semester schedule based on your preferences and academic requirements.",
+                text:
+                    "Hey! I’m your Scheduling Assistant 👋\n\n" +
+                    "I help you create the best possible semester schedule based on your academic progress and personal preferences.\n\n" +
+                    "You can ask me to customize things such as:\n" +
+                    "• Predered Geneds\n" +
+                    "• Preferred days (like M/W/F or T/Th only)\n" +
+                    "• Days you want off\n" +
+                    "• Minimum and maximum credits\n" +
+                    "• No morning or no evening classes\n" +
+                    "• Online vs. in-person sections\n" +
+                    "• Professors you want to avoid\n\n" +
+                    "Tell me what you’re looking for — I’ll generate multiple schedule options and you can pick or refine from there!",
             },
         ];
         isInitializing.value = false;
         await scrollToBottom();
         return;
     }
+
 
     messages.value = stored.map((t) => {
         try {
@@ -816,9 +828,21 @@ const handleConfirmOption = async (option) => {
             {
                 id: newId(),
                 role: "assistant",
-                text: "Session reset! Let's plan your next semester. 📚",
+                text:
+                    "Session reset! 📚\n\n" +
+                    "I'm ready to help you plan your next semester.\n\n" +
+                    "You can tell me about:\n" +
+                    "• Geneds you want to take\n" +
+                    "• Preferred days (M/W/F, T/Th, etc.)\n" +
+                    "• Days you want to avoid\n" +
+                    "• Credit range (min/max)\n" +
+                    "• No morning / no evening classes\n" +
+                    "• Online or in-person preferences\n" +
+                    "• Professors you want to avoid\n" +
+                    "Just let me know your preferences and I'll generate new schedule options for you!",
             },
         ];
+
         confirmMessageId.value = null;
         selectedScheduleIndex.value = null;
         selectedMessageId.value = null;
