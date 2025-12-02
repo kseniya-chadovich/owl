@@ -767,6 +767,7 @@ const handleConfirmOption = async (option) => {
             id: newId(),
             role: "user",
             text: `I confirm this schedule:\n${scheduleTextLines}`,
+            displaySchedule: selected,
         });
 
         await axios.post(`${DATA_URL}/students/schedules`, {
