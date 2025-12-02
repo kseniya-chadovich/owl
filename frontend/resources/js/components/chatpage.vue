@@ -161,8 +161,8 @@
                 Chat with Your Scheduling Assistant
             </h1>
             <p class="text-slate-500 text-base max-w-1xl mx-auto">
-                Describe your preferences and let's build
-                your perfect semester schedule.
+                Describe your preferences and let's build your perfect semester
+                schedule.
             </p>
         </div>
 
@@ -226,7 +226,6 @@
                     >
                         AI
                     </div>
-
                     <div
                         v-else
                         class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700 font-semibold shrink-0 shadow-sm order-last text-sm"
@@ -244,6 +243,128 @@
                         "
                     >
                         <p class="font-medium">{{ message.text }}</p>
+
+                        <div
+                            v-if="message.displaySchedule"
+                            class="mt-4 bg-white/20 rounded-xl p-4 space-y-3"
+                        >
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="font-bold text-white text-sm">
+                                    Selected Schedule
+                                </h3>
+                                <span
+                                    class="inline-flex items-center rounded-full bg-white/20 text-white text-xs px-2 py-1 font-medium"
+                                    >{{
+                                        message.displaySchedule.courses
+                                            ?.length || 0
+                                    }}
+                                    courses</span
+                                >
+                            </div>
+
+                            <div class="space-y-2">
+                                <div
+                                    v-for="(course, idx) in message
+                                        .displaySchedule.courses"
+                                    :key="idx"
+                                    class="flex items-center justify-between p-2 bg-white/10 rounded-lg backdrop-blur-sm"
+                                >
+                                    <div class="flex-1 min-w-0">
+                                        <div
+                                            class="flex items-center gap-2 mb-1"
+                                        >
+                                            <h4
+                                                class="font-semibold text-white text-sm truncate"
+                                            >
+                                                {{ course.course }}
+                                            </h4>
+                                            <div
+                                                class="flex gap-1 flex-shrink-0"
+                                            >
+                                                <span
+                                                    v-if="course.category"
+                                                    class="inline-flex items-center px-2 py-1 rounded-full bg-white/20 text-white text-xs font-medium"
+                                                    >{{ course.category }}</span
+                                                >
+                                                <span
+                                                    v-if="course.gened_type"
+                                                    class="inline-flex items-center px-2 py-1 rounded-full bg-amber-300/20 text-amber-200 text-xs font-medium"
+                                                    >{{
+                                                        course.gened_type
+                                                    }}</span
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            class="flex items-center gap-3 text-sm text-white/80"
+                                        >
+                                            <span
+                                                class="flex items-center gap-1"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-3 w-3"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                                {{ course.day_time || "TBD" }}
+                                            </span>
+                                            <span
+                                                class="flex items-center gap-1"
+                                                v-if="course.instructor"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-3 w-3"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                    />
+                                                </svg>
+                                                {{ course.instructor }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex items-center gap-2 ml-3 flex-shrink-0"
+                                    >
+                                        <span
+                                            class="bg-white/20 text-white px-2 py-1 rounded-full text-sm font-semibold"
+                                            >{{ course.credits }} cr</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                class="mt-3 flex justify-between items-center text-sm text-white/90"
+                            >
+                                <p class="font-semibold">
+                                    Total:
+                                    {{
+                                        message.displaySchedule.total_credits ??
+                                        "n/a"
+                                    }}
+                                    credits
+                                </p>
+                            </div>
+                        </div>
 
                         <div
                             v-if="message.confirmOptions"
@@ -282,9 +403,11 @@
                                     </h3>
                                     <span
                                         class="inline-flex items-center rounded-full bg-[#800020]/10 text-[#800020] text-xs px-2 py-1 font-medium"
+                                        >{{
+                                            schedule.courses.length
+                                        }}
+                                        courses</span
                                     >
-                                        {{ schedule.courses.length }} courses
-                                    </span>
                                 </div>
 
                                 <span
@@ -406,9 +529,7 @@
                             >
                                 <p class="font-semibold text-slate-800">
                                     Total:
-                                    {{
-                                        schedule.total_credits ?? "n/a"
-                                    }}
+                                    {{ schedule.total_credits ?? "n/a" }}
                                     credits
                                 </p>
                                 <p class="text-slate-500 text-sm">
@@ -644,13 +765,47 @@ const loadUser = async () => {
             }
         } catch {}
 
-        if (t.startsWith("User:"))
-            return { id: newId(), role: "user", text: t.replace("User: ", "") };
+        if (t.startsWith("User:")) {
+            const text = t.replace("User: ", "");
+            if (text.includes("I confirm this schedule:")) {
+                const scheduleText = text.split("\n")[1] || "";
+                return {
+                    id: newId(),
+                    role: "user",
+                    text: "I confirm this schedule.",
+                    displaySchedule: extractScheduleFromText(scheduleText),
+                };
+            }
+            return { id: newId(), role: "user", text: text };
+        }
         return { id: newId(), role: "assistant", text: t };
     });
 
     isInitializing.value = false;
     await scrollToBottom();
+};
+
+const extractScheduleFromText = (scheduleText) => {
+    const lines = scheduleText.split("\n").filter((line) => line.trim());
+    const courses = lines.map((line) => {
+        const parts = line.split("|").map((p) => p.trim());
+        return {
+            course: parts[0] || "",
+            day_time: parts[1] || "TBD",
+            credits: parseInt(parts[2]?.replace("cr", "")) || 0,
+            category: parts[3] || "",
+            gened_type: parts[4]?.replace("GenEd: ", "") || "",
+            instructor: parts[5]?.replace("Prof: ", "") || "",
+        };
+    });
+
+    return {
+        courses,
+        total_credits: courses.reduce(
+            (sum, course) => sum + (course.credits || 0),
+            0
+        ),
+    };
 };
 
 onMounted(loadUser);
@@ -763,10 +918,12 @@ const handleConfirmOption = async (option) => {
                     }${c.instructor ? " | Prof: " + c.instructor : ""}`
             )
             .join("\n");
+
         messages.value.push({
             id: newId(),
             role: "user",
-            text: `I confirm this schedule:\n${scheduleTextLines}`,
+            text: "I confirm this schedule.",
+            displaySchedule: selected,
         });
 
         await axios.post(`${DATA_URL}/students/schedules`, {

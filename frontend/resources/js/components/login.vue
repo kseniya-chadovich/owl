@@ -40,7 +40,7 @@
         </header>
 
         <main class="flex-1 flex items-center justify-center px-4 py-8">
-            <div class="w-full max-w-md" :class="{ 'fade-up in': isMounted }">
+            <div class="w-full max-w-md fade-up" :class="{ in: isMounted }">
                 <transition name="fade-msg">
                     <div
                         v-if="message.visible"
@@ -95,19 +95,21 @@
                 </transition>
 
                 <div
-                    class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8"
-                    :class="{ 'card-animate': isMounted }"
+                    class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 slide-up"
+                    :class="{ in: isMounted }"
                 >
                     <div class="text-center mb-8">
                         <h1
-                            class="text-3xl font-bold text-slate-800 mb-3"
-                            :class="{ 'title-animate': isMounted }"
+                            class="text-3xl font-bold text-slate-800 mb-3 slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 0.1s"
                         >
                             Welcome back 👋
                         </h1>
                         <p
-                            class="text-slate-600 text-base"
-                            :class="{ 'subtitle-animate': isMounted }"
+                            class="text-slate-600 text-base slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 0.2s"
                         >
                             Log in to access your AI scheduling assistant.
                         </p>
@@ -115,9 +117,9 @@
 
                     <form @submit.prevent="handleLogin" class="space-y-6">
                         <div
-                            class="space-y-2"
-                            :class="{ 'form-field-animate': isMounted }"
-                            style="animation-delay: 0.2s"
+                            class="space-y-2 slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 0.3s"
                         >
                             <label
                                 for="email"
@@ -130,15 +132,15 @@
                                 id="email"
                                 v-model="email"
                                 required
-                                class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200 input-animate"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
                                 placeholder="Enter your email"
                             />
                         </div>
 
                         <div
-                            class="space-y-2"
-                            :class="{ 'form-field-animate': isMounted }"
-                            style="animation-delay: 0.3s"
+                            class="space-y-2 slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 0.4s"
                         >
                             <label
                                 for="password"
@@ -152,7 +154,7 @@
                                     id="password"
                                     v-model="password"
                                     required
-                                    class="w-full px-4 py-3 pr-12 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200 input-animate"
+                                    class="w-full px-4 py-3 pr-12 rounded-xl border border-slate-300 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#800020]/40 focus:border-transparent transition-all duration-200"
                                     placeholder="Enter your password"
                                 />
                                 <button
@@ -167,12 +169,13 @@
                         </div>
 
                         <div
-                            :class="{ 'button-animate': isMounted }"
-                            style="animation-delay: 0.4s"
+                            class="slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 0.5s"
                         >
                             <button
                                 type="submit"
-                                class="w-full bg-gradient-to-r from-[#800020] to-[#a83232] text-white font-semibold py-3.5 rounded-xl hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed button-pulse"
+                                class="w-full bg-gradient-to-r from-[#800020] to-[#a83232] text-white font-semibold py-3.5 rounded-xl hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                 :disabled="isLoading"
                             >
                                 <span
@@ -189,9 +192,9 @@
                         </div>
 
                         <p
-                            class="text-center text-slate-600 text-sm"
-                            :class="{ 'footer-animate': isMounted }"
-                            style="animation-delay: 0.5s"
+                            class="text-center text-slate-600 text-sm slide-up"
+                            :class="{ in: isMounted }"
+                            style="animation-delay: 0.6s"
                         >
                             Don't have an account?
                             <button
@@ -208,10 +211,6 @@
         </main>
     </div>
 </template>
-
-
-
-
 
 <script setup>
 import { ref, onMounted } from "vue";
@@ -298,3 +297,35 @@ onMounted(() => {
     setTimeout(() => (isMounted.value = true), 100);
 });
 </script>
+
+<style scoped>
+.fade-msg-enter-active,
+.fade-msg-leave-active {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.fade-msg-enter-from,
+.fade-msg-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
+.fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-up.in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slide-up {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.slide-up.in {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
