@@ -106,6 +106,8 @@ Kseniya Chadovich - Project Lead & Full-Stack Developer
 
 Kaen Zhang - Backend Developer & Database Engineer
 
+Jingting Liu - Backend Developer (LLM Integration)
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
