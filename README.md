@@ -1,4 +1,4 @@
-# 🦉 **Owl's Schedule**
+# 🦉 **AI Scheduling Assistant**
 **AI-Powered Semester Planning for University Students**
 
 OwlSchedule is an intelligent academic planning assistant that helps university students build optimized semester schedules through a conversational interface.  
