@@ -768,7 +768,7 @@ const loadUser = async () => {
                     "Hey! I’m your Scheduling Assistant 👋\n\n" +
                     "I help you create the best possible semester schedule based on your academic progress and personal preferences.\n\n" +
                     "You can ask me to customize things such as:\n" +
-                    "• Predered Geneds\n" +
+                    "• Preferred Geneds\n" +
                     "• Preferred days (like M/W/F or T/Th only)\n" +
                     "• Days you want off\n" +
                     "• Minimum and maximum credits\n" +
