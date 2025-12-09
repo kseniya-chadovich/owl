@@ -338,6 +338,21 @@
                                                 </svg>
                                                 {{ course.instructor }}
                                             </span>
+
+                                            <span v-if="course.mode" class="flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-3 w-3"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M5 12.55a11 11 0 0114 0M8.5 16a5.5 5.5 0 017 0M12 20h.01" />
+                                                </svg>
+                                                {{ course.mode === "online" ? "Online" : "In-Person" }}
+                                            </span>
+
                                         </div>
                                     </div>
 
@@ -510,6 +525,20 @@
                                                 </svg>
                                                 {{ course.instructor }}
                                             </span>
+
+                                            <span v-if="course.mode" class="flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-3 w-3"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M5 12.55a11 11 0 0114 0M8.5 16a5.5 5.5 0 017 0M12 20h.01" />
+                                                </svg>
+                                                {{ course.mode === "online" ? "Online" : "In-Person" }}
+                                            </span>
                                         </div>
                                     </div>
 
@@ -677,6 +706,8 @@ const suggestions = [
     "Avoid online courses",
 ];
 const textareaRef = ref(null);
+const errorMessage = ref(null);
+
 
 let messageCounter = 0;
 const newId = () => `msg-${messageCounter++}`;
@@ -1070,17 +1101,32 @@ const autoResize = () => {
 
 const resetConversation = async () => {
     if (!user.value) return;
+
     await axios.post(`${AI_URL}/reset`, { user_id: user.value.id });
     await axios.delete(`${DATA_URL}/students/conversation/${user.value.id}`);
+
     messages.value = [
         {
             id: newId(),
             role: "assistant",
-            text: "Session reset! How can I help you?",
+            text:
+                "Session reset! 📚\n\n" +
+                "I'm ready to help you plan your next semester.\n\n" +
+                "You can tell me about:\n" +
+                "• Geneds you want to take\n" +
+                "• Preferred days (M/W/F, T/Th, etc.)\n" +
+                "• Days you want to avoid\n" +
+                "• Credit range (min/max)\n" +
+                "• No morning / no evening classes\n" +
+                "• Online or in-person preferences\n" +
+                "• Professors you want to avoid\n" +
+                "Just let me know your preferences and I'll generate new schedule options for you!",
         },
     ];
+
     confirmMessageId.value = null;
     selectedScheduleIndex.value = null;
     selectedMessageId.value = null;
 };
+
 </script>

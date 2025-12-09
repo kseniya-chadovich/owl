@@ -3,7 +3,7 @@ CATALOG_FILE = "data/course_catalog.json"
 PLAN_FILE = "data/plan.json"
 
 # ===== Weights =====
-PLAN_WEIGHT        = 1200
+PLAN_WEIGHT        = 1500
 UNSAT_GENED_WEIGHT = 400
 GENED_WEIGHT       = 400
 DAY_PREF_WEIGHT    = 300
