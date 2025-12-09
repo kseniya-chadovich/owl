@@ -103,6 +103,7 @@ AI_API_KEY=
 
 ## **Contributors**
 Kseniya Chadovich - Project Lead & Full-Stack Developer
+Kaen Zhang - Backend Developer & Database Engineer
 
 ## Contributing
 
