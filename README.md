@@ -110,6 +110,8 @@ Jingting Liu - Backend Developer (LLM Integration)
 
 Fathima Hamna Mohamed Suhree - Frontend Developer & Supabase Auth
 
+Harleen Kaur - Frontend Developer
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
